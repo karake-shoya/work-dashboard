@@ -2,6 +2,7 @@ import React from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { WorkTimeCalculator } from "@/components/time/WorkTimeCalculator";
 import { PomodoroTimer } from "@/components/time/PomodoroTimer";
+import { StopwatchTimer } from "@/components/time/StopwatchTimer";
 import { BaseDateCounter } from "@/components/task/BaseDateCounter";
 import { TodoList } from "@/components/task/TodoList";
 import { Translator } from "@/components/tools/Translator";
@@ -27,9 +28,10 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
             Time Management
           </h2>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
             <WorkTimeCalculator />
             <PomodoroTimer />
+            <StopwatchTimer />
           </div>
         </section>
 
