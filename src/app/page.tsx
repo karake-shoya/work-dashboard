@@ -8,6 +8,7 @@ import { BaseDateCounter } from "@/components/task/BaseDateCounter";
 import { TodoList } from "@/components/task/TodoList";
 import { Translator } from "@/components/tools/Translator";
 import { QiitaTrends } from "@/components/tools/QiitaTrends";
+import { Weather } from "@/components/tools/Weather";
 import { Memo } from "@/components/memo/Memo";
 
 export default async function Home() {
@@ -74,6 +75,13 @@ export default async function Home() {
           </div>
 
           <div className="lg:col-span-4 space-y-6">
+            <section className="bg-card text-card-foreground rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-4">
+              <h2 className="text-xl font-semibold border-b pb-2 dark:border-gray-800">
+                Weather
+              </h2>
+              <Weather />
+            </section>
+
             <section className="bg-card text-card-foreground rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-4">
               <h2 className="text-xl font-semibold border-b pb-2 dark:border-gray-800">
                 Tools
