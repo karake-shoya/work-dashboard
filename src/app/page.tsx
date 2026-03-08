@@ -3,10 +3,12 @@ import { auth, signOut } from "@/auth";
 import { Clock } from "@/components/time/Clock";
 import { WorkTimeCalculator } from "@/components/time/WorkTimeCalculator";
 import { NotificationHandler } from "@/components/time/NotificationHandler";
+import { PomodoroTimer } from "@/components/time/PomodoroTimer";
 import { BaseDateCounter } from "@/components/task/BaseDateCounter";
 import { TodoList } from "@/components/task/TodoList";
 import { Translator } from "@/components/tools/Translator";
 import { QiitaTrends } from "@/components/tools/QiitaTrends";
+import { Memo } from "@/components/memo/Memo";
 
 export default async function Home() {
   const session = await auth();
@@ -59,6 +61,7 @@ export default async function Home() {
               <Clock />
               <WorkTimeCalculator />
               <NotificationHandler />
+              <PomodoroTimer />
             </section>
 
             <section className="bg-card text-card-foreground rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-4">
@@ -80,6 +83,8 @@ export default async function Home() {
             </section>
           </div>
         </div>
+
+        <Memo />
       </div>
     </main>
   );
