@@ -43,14 +43,12 @@ export function Clock() {
   });
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800">
-      <div className="flex items-center space-x-3 text-foreground">
-        <ClockIcon className="w-6 h-6 text-blue-500" />
-        <span className="text-2xl font-bold font-mono tracking-wider">{timeString}</span>
+    <div className="space-y-0.5">
+      <div className="flex items-center gap-2 text-foreground">
+        <ClockIcon className="w-4 h-4 text-blue-500 shrink-0" />
+        <span className="text-lg font-bold font-mono tracking-wider">{timeString}</span>
       </div>
-      <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-        {dateString}
-      </div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 pl-6">{dateString}</div>
     </div>
   );
 }

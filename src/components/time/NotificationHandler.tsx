@@ -107,21 +107,21 @@ export function NotificationHandler() {
   }, [startTimeStr]);
 
   return (
-    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800 mt-4">
-      <div className="flex items-center space-x-3">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
         {notificationsEnabled && permission === "granted" ? (
-          <BellRing className="w-5 h-5 text-green-500" />
+          <BellRing className="w-4 h-4 text-green-500" />
         ) : (
-          <BellOff className="w-5 h-5 text-gray-400" />
+          <BellOff className="w-4 h-4 text-gray-400" />
         )}
-        <span className="text-sm font-medium text-foreground">リマインダー通知</span>
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">リマインダー</span>
       </div>
-      <button 
+      <button
         onClick={toggleNotifications}
-        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
-          notificationsEnabled && permission === "granted" 
-            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400" 
-            : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+          notificationsEnabled && permission === "granted"
+            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
         }`}
       >
         {notificationsEnabled && permission === "granted" ? "ON" : "OFF"}
