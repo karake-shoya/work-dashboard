@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { BookOpen, TrendingUp, ExternalLink, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, TrendingUp, ExternalLink, Loader2, ArrowRight } from "lucide-react";
 
-type QiitaArticle = {
+export type QiitaArticle = {
   id: string;
   title: string;
   url: string;
@@ -15,60 +16,35 @@ type QiitaArticle = {
   created_at: string;
 };
 
+export async function fetchQiitaTrends(perPage: number): Promise<QiitaArticle[]> {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  const queryStr = `created:>${d.toISOString().split("T")[0]} stocks:>10`;
+  const res = await fetch(
+    `https://qiita.com/api/v2/items?page=1&per_page=${perPage}&query=${encodeURIComponent(queryStr)}`
+  );
+  if (!res.ok) throw new Error("Qiita APIの取得に失敗しました");
+  return res.json();
+}
+
 export function QiitaTrends() {
   const [articles, setArticles] = useState<QiitaArticle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchTrendingArticles = async () => {
+  const load = async () => {
     setIsLoading(true);
     setError("");
     try {
-      // 過去1週間に作成された記事でLGTMが多いものを取得するような簡易クエリ
-      // ※実際はQiita APIには/trendエンドポイントがないため、タグやいいね数で検索
-      const d = new Date();
-      d.setDate(d.getDate() - 7);
-      const queryStr = `created:>${d.toISOString().split('T')[0]} stocks:>10`;
-      
-      const res = await fetch(`https://qiita.com/api/v2/items?page=1&per_page=5&query=${encodeURIComponent(queryStr)}`);
-      
-      if (!res.ok) {
-        throw new Error("Qiita APIの取得に失敗しました");
-      }
-      
-      const data = await res.json();
-      setArticles(data);
-    } catch (err) {
-      console.error(err);
-      setError("記事の取得に失敗しました。時間をおいて再試行してください。");
-      
-      // フォールバック: モックデータを表示
-      setArticles([
-        {
-          id: "mock1",
-          title: "フロントエンド開発の最新トレンド2026",
-          url: "https://qiita.com",
-          likes_count: 128,
-          created_at: new Date().toISOString(),
-          user: { id: "userA", profile_image_url: "https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/0/ccf00cf044cc4a9/profile-images/1473693600" }
-        },
-        {
-          id: "mock2",
-          title: "Next.js App Routerでの状態管理ベストプラクティス",
-          url: "https://qiita.com",
-          likes_count: 85,
-          created_at: new Date().toISOString(),
-          user: { id: "userB", profile_image_url: "https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/0/ccf00cf044cc4a9/profile-images/1473693600" }
-        }
-      ]);
+      setArticles(await fetchQiitaTrends(3));
+    } catch {
+      setError("取得に失敗しました。");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTrendingArticles();
-  }, []);
+  useEffect(() => { load(); }, []);
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl space-y-4">
@@ -77,8 +53,8 @@ export function QiitaTrends() {
           <BookOpen className="w-5 h-5 text-green-500" />
           Qiita Trends
         </h3>
-        <button 
-          onClick={fetchTrendingArticles}
+        <button
+          onClick={load}
           disabled={isLoading}
           className="text-gray-400 hover:text-green-500 transition-colors disabled:opacity-50"
           title="更新"
@@ -95,18 +71,17 @@ export function QiitaTrends() {
         <div className="space-y-3">
           {error && (
             <div className="p-2 text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 rounded">
-              {error} - モックデータを表示しています。
+              {error}
             </div>
           )}
-          
           <ul className="space-y-3">
             {articles.map((article) => (
               <li key={article.id} className="group">
-                <a 
-                  href={article.url} 
-                  target="_blank" 
+                <a
+                  href={article.url}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg border border-transparent dark:border-gray-700/50 hover:border-green-200 dark:hover:border-green-900/50 transition-all text-left"
+                  className="block p-3 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg border border-transparent dark:border-gray-700/50 hover:border-green-200 dark:hover:border-green-900/50 transition-all"
                 >
                   <div className="flex justify-between items-start gap-2">
                     <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-2 leading-snug group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
@@ -124,6 +99,14 @@ export function QiitaTrends() {
               </li>
             ))}
           </ul>
+
+          <Link
+            href="/qiita"
+            className="flex items-center justify-center gap-1.5 w-full py-2 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors border border-green-100 dark:border-green-900/40"
+          >
+            すべて見る
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       )}
     </div>
