@@ -3,7 +3,6 @@ import Link from "next/link";
 import { signOut } from "@/auth";
 import { Clock } from "@/components/time/Clock";
 import { WeatherCompact } from "@/components/tools/WeatherCompact";
-import { NotificationHandler } from "@/components/time/NotificationHandler";
 import { LayoutDashboard, Timer, ListTodo, FileText, Wrench, BookOpen, LogOut } from "lucide-react";
 import { auth } from "@/auth";
 
@@ -51,11 +50,6 @@ export async function Sidebar() {
           </a>
         ))}
       </nav>
-
-      {/* 通知設定 */}
-      <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-800">
-        <NotificationHandler />
-      </div>
 
       {/* ユーザー情報 + ログアウト */}
       <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-800">

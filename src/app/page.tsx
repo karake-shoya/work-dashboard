@@ -1,7 +1,6 @@
 import React from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { WorkTimeCalculator } from "@/components/time/WorkTimeCalculator";
-import { NotificationHandler } from "@/components/time/NotificationHandler";
 import { PomodoroTimer } from "@/components/time/PomodoroTimer";
 import { BaseDateCounter } from "@/components/task/BaseDateCounter";
 import { TodoList } from "@/components/task/TodoList";
@@ -21,7 +20,7 @@ export default function Home() {
         <span className="text-sm font-bold text-foreground">Work Dashboard</span>
       </header>
 
-      <main className="lg:ml-60 p-4 md:p-6 space-y-8 max-w-5xl">
+      <main className="lg:ml-60 p-4 md:p-6 space-y-8">
 
         {/* 時間管理 */}
         <section id="time-management" className="scroll-mt-4 space-y-4">
@@ -32,7 +31,6 @@ export default function Home() {
             <WorkTimeCalculator />
             <PomodoroTimer />
           </div>
-          <NotificationHandler />
         </section>
 
         {/* タスク・進捗 */}
@@ -40,8 +38,10 @@ export default function Home() {
           <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
             Progress & Tasks
           </h2>
-          <BaseDateCounter />
-          <TodoList />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+            <BaseDateCounter />
+            <TodoList />
+          </div>
         </section>
 
         {/* メモ */}

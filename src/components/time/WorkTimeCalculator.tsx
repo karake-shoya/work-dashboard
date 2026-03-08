@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { NotificationHandler } from "@/components/time/NotificationHandler";
 import { Play, Coffee, Bell } from "lucide-react";
 
 // Helper: "HH:MM" 形式から Date オブジェクトを作成（当日の日付ベース）
@@ -182,6 +183,7 @@ export function WorkTimeCalculator() {
         </div>
       </div>
 
+      <NotificationHandler />
     </div>
   );
 }
