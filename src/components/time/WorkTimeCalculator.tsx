@@ -78,54 +78,26 @@ export function WorkTimeCalculator() {
   // オフセット調整ボタンの共通スタイル
   const offsetBtnClass = "px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors";
 
-  // 休憩トグル（大小画面で表示位置が変わるため変数化）
-  const breakToggle = (
-    <label className="flex items-center cursor-pointer">
-      <div className="relative">
-        <input
-          type="checkbox"
-          className="sr-only"
-          checked={includesBreak}
-          onChange={(e) => setIncludesBreak(e.target.checked)}
-        />
-        <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${includesBreak ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
-        <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${includesBreak ? 'transform translate-x-4' : ''}`}></div>
-      </div>
-      <div className="ml-3 text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
-        <Coffee className="w-4 h-4" />
-        休憩(-1h)
-      </div>
-    </label>
-  );
-
   return (
     <div className="space-y-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        {/* 開始時刻入力 */}
-        <div className="flex-1 space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            開始時刻
-          </label>
-          {/* 小画面: 縦並び / 大画面: 横並び */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <input
-              type="time"
-              value={startTimeStr}
-              onChange={(e) => setStartTimeStr(e.target.value)}
-              className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-            />
-            <button
-              onClick={handleSetNow}
-              className="sm:shrink-0 px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-medium rounded-lg transition-colors"
-            >
-              現在時刻
-            </button>
-          </div>
-        </div>
-
-        {/* 休憩トグル（sm以上でのみ右上に表示） */}
-        <div className="hidden sm:flex items-center mb-2">
-          {breakToggle}
+      {/* 開始時刻入力 */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          開始時刻
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="time"
+            value={startTimeStr}
+            onChange={(e) => setStartTimeStr(e.target.value)}
+            className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+          />
+          <button
+            onClick={handleSetNow}
+            className="shrink-0 px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-medium rounded-lg transition-colors"
+          >
+            現在時刻
+          </button>
         </div>
       </div>
 
@@ -178,10 +150,23 @@ export function WorkTimeCalculator() {
           </button>
         </div>
 
-        {/* 休憩トグル（sm未満でのみボタンの下に表示） */}
-        <div className="sm:hidden">
-          {breakToggle}
-        </div>
+        {/* 休憩トグル */}
+        <label className="flex items-center cursor-pointer">
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={includesBreak}
+              onChange={(e) => setIncludesBreak(e.target.checked)}
+            />
+            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${includesBreak ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+            <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${includesBreak ? 'transform translate-x-4' : ''}`}></div>
+          </div>
+          <div className="ml-3 text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
+            <Coffee className="w-4 h-4" />
+            休憩(-1h)
+          </div>
+        </label>
       </div>
 
       <NotificationHandler />
