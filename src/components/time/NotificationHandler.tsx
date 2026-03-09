@@ -69,14 +69,20 @@ export function NotificationHandler() {
     if (!notificationsEnabled || permission !== "granted" || !startObj || !estimatedEnd) return;
 
     const lastNotifiedKey = "work-last-notified";
-    
+
     const checkNotification = () => {
       const now = new Date();
       const elapsedMs = now.getTime() - startObj.getTime();
       const elapsedHour = Math.floor(elapsedMs / (60 * 60 * 1000));
-      
-      const lastNotifiedData = JSON.parse(window.localStorage.getItem(lastNotifiedKey) || '{"hour": -1, "end": false}');
-      
+
+      const stored = JSON.parse(window.localStorage.getItem(lastNotifiedKey) || "null");
+      // 開始時刻が変わっていたら通知履歴をリセット（別のuseEffectでリセットすると
+      // インターバルとの実行順序がずれて誤発火するため、ここで一元管理する）
+      const lastNotifiedData: { startTime: string; hour: number; end: boolean } =
+        stored?.startTime === startTimeStr
+          ? stored
+          : { startTime: startTimeStr, hour: -1, end: false };
+
       // 1時間ごとのリマインダー通知
       if (elapsedHour > 0 && lastNotifiedData.hour < elapsedHour && now < estimatedEnd) {
         new Notification("リマインダー", { body: `稼働開始から ${elapsedHour} 時間経過しました。` });
@@ -90,21 +96,11 @@ export function NotificationHandler() {
         lastNotifiedData.end = true;
         window.localStorage.setItem(lastNotifiedKey, JSON.stringify(lastNotifiedData));
       }
-
-      // 日付が変わったら(または開始時刻が変わったら)リセットするロジックは
-      // lastNotifiedKeyに日付を含めるなどで実現できるが、簡略化のため現状はリマインダーデータを上書き
     };
 
     const interval = setInterval(checkNotification, 10000); // 10秒に一度確認
     return () => clearInterval(interval);
-  }, [notificationsEnabled, permission, startObj, estimatedEnd]);
-
-  // 新しく開始時刻がセットされたら、通知管理用データをリセットする
-  useEffect(() => {
-    if (startTimeStr) {
-      window.localStorage.setItem("work-last-notified", '{"hour": -1, "end": false}');
-    }
-  }, [startTimeStr]);
+  }, [notificationsEnabled, permission, startObj, estimatedEnd, startTimeStr]);
 
   return (
     <div className="flex items-center justify-between">
