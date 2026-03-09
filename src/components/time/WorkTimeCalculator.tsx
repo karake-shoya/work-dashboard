@@ -75,6 +75,9 @@ export function WorkTimeCalculator() {
 
   const endStr = estimatedEnd ? estimatedEnd.toLocaleTimeString("ja-JP", { hour12: false, hour: '2-digit', minute: '2-digit' }) : "--:--";
 
+  // オフセット調整ボタンの共通スタイル
+  const offsetBtnClass = "px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors";
+
   return (
     <div className="space-y-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -141,45 +144,32 @@ export function WorkTimeCalculator() {
       </div>
 
       {/* 終了時刻調整 */}
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">予定終了時刻</span>
-            <span className="ml-3 text-xl font-bold text-foreground font-mono">
-              {endStr}
-            </span>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={() => setOffsetMinutes(prev => prev - 30)}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors"
-            >
-              -30m
-            </button>
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12 text-center">
-              {offsetMinutes >= 0 ? `+${offsetMinutes}` : offsetMinutes}m
-            </span>
-            <button 
-              onClick={() => setOffsetMinutes(prev => prev + 30)}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors"
-            >
-              +30m
-            </button>
-            <button 
-              onClick={() => setOffsetMinutes(prev => prev + 60)}
-              className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors"
-            >
-              +1h
-            </button>
-            <button 
-              onClick={handleClear}
-              className="ml-2 px-3 py-1 text-sm bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded transition-colors"
-              title="開始時刻をクリア"
-            >
-              リセット
-            </button>
-          </div>
+      <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">予定終了時刻</span>
+          <span className="text-xl font-bold text-foreground font-mono">{endStr}</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button onClick={() => setOffsetMinutes(prev => prev - 30)} className={offsetBtnClass}>
+            -30m
+          </button>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12 text-center">
+            {offsetMinutes >= 0 ? `+${offsetMinutes}` : offsetMinutes}m
+          </span>
+          <button onClick={() => setOffsetMinutes(prev => prev + 30)} className={offsetBtnClass}>
+            +30m
+          </button>
+          <button onClick={() => setOffsetMinutes(prev => prev + 60)} className={offsetBtnClass}>
+            +1h
+          </button>
+          <button
+            onClick={handleClear}
+            className="px-3 py-1 text-sm bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded transition-colors"
+            title="開始時刻をクリア"
+          >
+            リセット
+          </button>
         </div>
       </div>
 
