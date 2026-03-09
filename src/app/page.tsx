@@ -8,6 +8,7 @@ import { TodoList } from "@/components/task/TodoList";
 import { Translator } from "@/components/tools/Translator";
 import { QiitaTrends } from "@/components/tools/QiitaTrends";
 import { Memo } from "@/components/memo/Memo";
+import { SideJobCalculator } from "@/components/side-job/SideJobCalculator";
 import { LayoutDashboard } from "lucide-react";
 
 export default function Home() {
@@ -49,6 +50,14 @@ export default function Home() {
         {/* メモ */}
         <section id="memo" className="scroll-mt-4">
           <Memo />
+        </section>
+
+        {/* 副業管理 */}
+        <section id="side-job" className="scroll-mt-4 space-y-4">
+          <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
+            副業管理
+          </h2>
+          <SideJobCalculator />
         </section>
 
         {/* ツール */}

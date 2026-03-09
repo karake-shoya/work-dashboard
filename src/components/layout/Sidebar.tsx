@@ -3,15 +3,16 @@ import Link from "next/link";
 import { signOut } from "@/auth";
 import { Clock } from "@/components/time/Clock";
 import { WeatherCompact } from "@/components/tools/WeatherCompact";
-import { LayoutDashboard, Timer, ListTodo, FileText, Wrench, BookOpen, LogOut } from "lucide-react";
+import { LayoutDashboard, Timer, ListTodo, FileText, Wrench, BookOpen, Briefcase, LogOut } from "lucide-react";
 import { auth } from "@/auth";
 
 const NAV_ITEMS = [
-  { href: "#time-management", icon: Timer,    label: "時間管理" },
-  { href: "#tasks",           icon: ListTodo, label: "タスク"   },
+  { href: "#time-management", icon: Timer,     label: "時間管理" },
+  { href: "#tasks",           icon: ListTodo,  label: "タスク"   },
   { href: "#memo",            icon: FileText,  label: "メモ"     },
-  { href: "#tools",           icon: Wrench,   label: "ツール"   },
-  { href: "/qiita",           icon: BookOpen, label: "Qiita"    },
+  { href: "#side-job",        icon: Briefcase, label: "副業管理" },
+  { href: "#tools",           icon: Wrench,    label: "ツール"   },
+  { href: "/qiita",           icon: BookOpen,  label: "Qiita"    },
 ] as const;
 
 export async function Sidebar() {
