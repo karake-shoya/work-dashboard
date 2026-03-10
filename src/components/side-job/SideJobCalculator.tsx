@@ -29,29 +29,36 @@ function calcRemainingDays(includeToday: boolean): { weekdays: number; weekends:
 }
 
 export function SideJobCalculator() {
-  const [currentHours, setCurrentHours] = useLocalStorage<number>("side-job-current-hours", 0);
-  const [targetHours, setTargetHours] = useLocalStorage<number>("side-job-target-hours", 0);
-  const [weekendHours, setWeekendHours] = useLocalStorage<number>("side-job-weekend-hours", 0);
+  const [currentHours, setCurrentHours] = useLocalStorage<number | null>("side-job-current-hours", null);
+  const [targetHours, setTargetHours] = useLocalStorage<number | null>("side-job-target-hours", null);
+  const [weekendHours, setWeekendHours] = useLocalStorage<number | null>("side-job-weekend-hours", null);
   const [includeToday, setIncludeToday] = useLocalStorage<boolean>("side-job-include-today", true);
 
   // 計算ロジック
   const result = useMemo(() => {
-    const remaining = targetHours - currentHours;
+    const current = currentHours ?? 0;
+    const target = targetHours ?? 0;
+    const weekend = weekendHours ?? 0;
+    const remaining = target - current;
     const { weekdays, weekends } = calcRemainingDays(includeToday);
-    const weekendTotal = weekends * weekendHours;
+    const weekendTotal = weekends * weekend;
     const weekdayNeeded = remaining - weekendTotal;
     const perWeekday = weekdays > 0 ? weekdayNeeded / weekdays : null;
 
     return { remaining, weekdays, weekends, weekendTotal, weekdayNeeded, perWeekday };
   }, [currentHours, targetHours, weekendHours, includeToday]);
 
-  // 数値入力のハンドラ
+  // 数値入力のハンドラ（空文字はnullとして保存）
   const handleNumberInput = (
-    setter: (v: number) => void,
+    setter: (v: number | null) => void,
     value: string
   ) => {
+    if (value === "") {
+      setter(null);
+      return;
+    }
     const parsed = parseFloat(value);
-    setter(isNaN(parsed) ? 0 : parsed);
+    setter(isNaN(parsed) ? null : parsed);
   };
 
   // トグルスタイル
@@ -59,13 +66,14 @@ export function SideJobCalculator() {
   const toggleDotClass = `dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${includeToday ? "transform translate-x-4" : ""}`;
 
   // 結果の状態判定
+  const hasTarget = targetHours !== null && targetHours > 0;
   const isOverTarget = result.remaining < 0;
   const noWeekdaysLeft = result.weekdays === 0 && !isOverTarget;
   const weekdayNeededNegative = result.weekdayNeeded < 0 && !isOverTarget;
 
   // 平日1日あたりの時間表示
   const renderPerWeekday = () => {
-    if (targetHours === 0) {
+    if (!hasTarget) {
       return <span className="text-gray-400 dark:text-gray-500">上限時間を入力してください</span>;
     }
     if (isOverTarget) {
@@ -123,7 +131,7 @@ export function SideJobCalculator() {
             type="number"
             min={0}
             step={0.5}
-            value={currentHours}
+            value={currentHours ?? ""}
             onChange={(e) => handleNumberInput(setCurrentHours, e.target.value)}
             className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
             placeholder="例: 12"
@@ -138,7 +146,7 @@ export function SideJobCalculator() {
             type="number"
             min={0}
             step={0.5}
-            value={targetHours}
+            value={targetHours ?? ""}
             onChange={(e) => handleNumberInput(setTargetHours, e.target.value)}
             className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
             placeholder="例: 40"
@@ -153,7 +161,7 @@ export function SideJobCalculator() {
             type="number"
             min={0}
             step={0.5}
-            value={weekendHours}
+            value={weekendHours ?? ""}
             onChange={(e) => handleNumberInput(setWeekendHours, e.target.value)}
             className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
             placeholder="例: 3"
@@ -187,7 +195,7 @@ export function SideJobCalculator() {
           <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">残り稼働時間</div>
             <div className={`text-xl font-bold font-mono ${isOverTarget ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}>
-              {targetHours === 0 ? "-" : `${result.remaining.toFixed(1)}h`}
+              {!hasTarget ? "-" : `${result.remaining.toFixed(1)}h`}
             </div>
           </div>
 
