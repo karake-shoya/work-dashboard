@@ -3,8 +3,9 @@
 import React, { useMemo } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Briefcase, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import * as HolidayJp from "@holiday-jp/holiday_jp";
 
-// 今月の残り平日・土日日数を計算する
+// 今月の残り平日・土日祝日数を計算する
 function calcRemainingDays(includeToday: boolean): { weekdays: number; weekends: number } {
   const today = new Date();
   const start = new Date(today);
@@ -18,7 +19,7 @@ function calcRemainingDays(includeToday: boolean): { weekdays: number; weekends:
 
   for (let d = new Date(start); d <= lastDay; d.setDate(d.getDate() + 1)) {
     const dow = d.getDay();
-    if (dow === 0 || dow === 6) {
+    if (dow === 0 || dow === 6 || HolidayJp.isHoliday(d)) {
       weekends++;
     } else {
       weekdays++;
@@ -96,7 +97,7 @@ export function SideJobCalculator() {
       return (
         <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
           <AlertTriangle className="w-5 h-5 shrink-0" />
-          <span>残り平日がありません（土日のみ: {result.weekendTotal.toFixed(1)}h 予定）</span>
+          <span>残り平日がありません（土日祝のみ: {result.weekendTotal.toFixed(1)}h 予定）</span>
         </div>
       );
     }
@@ -155,7 +156,7 @@ export function SideJobCalculator() {
 
         <div className="space-y-1.5">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            土日1日の稼働予定 (h)
+            土日祝1日の稼働予定 (h)
           </label>
           <input
             type="number"
@@ -207,7 +208,7 @@ export function SideJobCalculator() {
           </div>
 
           <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
-            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">残り土日</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">残り土日祝</div>
             <div className="text-xl font-bold font-mono text-foreground">
               {result.weekends}<span className="text-sm font-normal text-gray-500 ml-0.5">日</span>
             </div>
@@ -225,7 +226,7 @@ export function SideJobCalculator() {
           </div>
           {!isOverTarget && result.perWeekday !== null && result.weekdayNeeded >= 0 && result.weekdays > 0 && (
             <div className="mt-1 text-xs text-blue-500 dark:text-blue-400">
-              土日合計 {result.weekendTotal.toFixed(1)}h + 平日 {result.weekdayNeeded.toFixed(1)}h = {result.remaining.toFixed(1)}h
+              土日祝合計 {result.weekendTotal.toFixed(1)}h + 平日 {result.weekdayNeeded.toFixed(1)}h = {result.remaining.toFixed(1)}h
             </div>
           )}
         </div>
