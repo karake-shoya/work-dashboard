@@ -17,7 +17,6 @@ export function usePiP() {
         return;
       }
 
-      // 既存のPiPウィンドウがあれば閉じる
       pipWinRef.current?.close();
 
       const pipWin = await (
@@ -34,7 +33,6 @@ export function usePiP() {
         height: options.height ?? 200,
       });
 
-      // スタイルシートをPiPウィンドウにコピー
       [...document.styleSheets].forEach((sheet) => {
         try {
           const css = [...sheet.cssRules].map((r) => r.cssText).join("");
@@ -51,7 +49,6 @@ export function usePiP() {
         }
       });
 
-      // ダークモードクラスを引き継ぐ
       if (document.documentElement.classList.contains("dark")) {
         pipWin.document.documentElement.classList.add("dark");
       }
@@ -69,12 +66,14 @@ export function usePiP() {
       pipWinRef.current = pipWin;
       setIsPiP(true);
 
-      pipWin.addEventListener("pagehide", () => {
+      // root/pipWin をクロージャで参照し、後から開いたウィンドウの参照を誤って消さないようガード
+      const handlePageHide = () => {
         root.unmount();
-        rootRef.current = null;
-        pipWinRef.current = null;
+        if (rootRef.current === root) rootRef.current = null;
+        if (pipWinRef.current === pipWin) pipWinRef.current = null;
         setIsPiP(false);
-      });
+      };
+      pipWin.addEventListener("pagehide", handlePageHide);
     },
     []
   );

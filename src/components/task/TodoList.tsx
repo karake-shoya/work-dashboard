@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
 
@@ -10,6 +10,8 @@ type Todo = {
   completed: boolean;
   createdAt: number;
 };
+
+const deleteBtnCls = "p-1.5 text-muted hover:text-red-400 hover:bg-red-950/20 rounded-sm transition-colors opacity-0 group-hover:opacity-100";
 
 export function TodoList() {
   const [todos, setTodos] = useLocalStorage<Todo[]>("work-todos", []);
@@ -42,56 +44,56 @@ export function TodoList() {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
   };
 
-  const activeTodos = todos.filter((t) => !t.completed).sort((a, b) => b.createdAt - a.createdAt);
-  const completedTodos = todos.filter((t) => t.completed).sort((a, b) => b.createdAt - a.createdAt);
+  const activeTodos = useMemo(
+    () => todos.filter((t) => !t.completed).sort((a, b) => b.createdAt - a.createdAt),
+    [todos]
+  );
+  const completedTodos = useMemo(
+    () => todos.filter((t) => t.completed).sort((a, b) => b.createdAt - a.createdAt),
+    [todos]
+  );
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl space-y-4">
-      {/* 入力フォーム */}
+    <div className="bg-card border border-border border-l-2 border-l-indigo-500 p-5 rounded-md space-y-4">
       <form onSubmit={handleAddTodo} className="flex gap-2">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="新しいタスクを入力..."
-          className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white transition-colors"
+          className="flex-1 px-4 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 font-mono text-sm transition-colors"
         />
         <button
           type="submit"
           disabled={!inputValue.trim()}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg flex items-center justify-center transition-colors"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-md flex items-center justify-center transition-colors"
         >
           <Plus className="w-5 h-5" />
         </button>
       </form>
 
-      {/* タスクリスト */}
       <div className="space-y-6">
-        {/* 未完了タスク */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 flex items-center justify-between">
-            <span>未完了 ({activeTodos.length})</span>
+          <h3 className="text-xs font-semibold text-muted uppercase tracking-widest">
+            未完了 ({activeTodos.length})
           </h3>
           {activeTodos.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-600 italic px-2">タスクはありません</p>
+            <p className="text-sm text-muted italic px-2">タスクはありません</p>
           ) : (
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
               {activeTodos.map((todo) => (
-                <li 
-                  key={todo.id} 
-                  className="group flex items-center justify-between p-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg shadow-sm hover:border-blue-300 dark:hover:border-blue-700 transition-colors"
+                <li
+                  key={todo.id}
+                  className="group flex items-center justify-between p-3 bg-card-raised border border-border rounded-md hover:border-foreground/20 transition-colors"
                 >
-                  <button 
+                  <button
                     onClick={() => toggleTodo(todo.id)}
                     className="flex items-center gap-3 text-left flex-1"
                   >
-                    <Circle className="w-5 h-5 text-gray-400 dark:text-gray-500 group-hover:text-blue-500 transition-colors shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-200">{todo.text}</span>
+                    <Circle className="w-4 h-4 text-muted group-hover:text-foreground transition-colors shrink-0" />
+                    <span className="text-sm text-foreground">{todo.text}</span>
                   </button>
-                  <button 
-                    onClick={() => deleteTodo(todo.id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                  >
+                  <button onClick={() => deleteTodo(todo.id)} className={deleteBtnCls}>
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </li>
@@ -100,29 +102,25 @@ export function TodoList() {
           )}
         </div>
 
-        {/* 完了済みタスク */}
         {completedTodos.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-gray-100 dark:border-gray-800 pt-4">
-              <span>完了済み ({completedTodos.length})</span>
+            <h3 className="text-xs font-semibold text-muted uppercase tracking-widest border-t border-border pt-4">
+              完了済み ({completedTodos.length})
             </h3>
-            <ul className="space-y-2 opacity-60">
+            <ul className="space-y-1.5 opacity-50">
               {completedTodos.map((todo) => (
-                <li 
-                  key={todo.id} 
-                  className="group flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 border border-transparent rounded-lg"
+                <li
+                  key={todo.id}
+                  className="group flex items-center justify-between p-3 bg-muted-bg border border-border rounded-md"
                 >
-                  <button 
+                  <button
                     onClick={() => toggleTodo(todo.id)}
                     className="flex items-center gap-3 text-left flex-1"
                   >
-                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                    <span className="text-gray-500 dark:text-gray-400 line-through">{todo.text}</span>
+                    <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
+                    <span className="text-sm text-muted line-through">{todo.text}</span>
                   </button>
-                  <button 
-                    onClick={() => deleteTodo(todo.id)}
-                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                  >
+                  <button onClick={() => deleteTodo(todo.id)} className={deleteBtnCls}>
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </li>

@@ -36,14 +36,14 @@ function PiPContent({
   const { main: lapMain, sub: lapSub } = formatTime(lastLapElapsed);
 
   return (
-    <div className="bg-white dark:bg-gray-900 h-full flex flex-col items-center justify-center gap-3 p-4">
+    <div className="bg-background h-full flex flex-col items-center justify-center gap-3 p-4">
       <div className="text-center">
         <div className="flex items-end justify-center gap-1">
-          <span className="text-4xl font-bold font-mono text-foreground tracking-wider">{main}</span>
-          <span className="text-xl font-bold font-mono text-gray-400 dark:text-gray-500 mb-0.5">.{sub}</span>
+          <span className="text-4xl font-bold font-mono text-foreground tracking-wider tabular-nums">{main}</span>
+          <span className="text-xl font-bold font-mono text-muted mb-0.5">.{sub}</span>
         </div>
         {laps.length > 0 && (
-          <div className="mt-1 text-xs font-mono text-gray-400 dark:text-gray-500">
+          <div className="mt-1 text-xs font-mono text-muted">
             ラップ +{lapMain}.{lapSub}
           </div>
         )}
@@ -51,7 +51,7 @@ function PiPContent({
       <div className="flex items-center gap-2">
         <button
           onClick={onToggle}
-          className="flex items-center gap-1 px-4 py-1.5 text-sm font-medium rounded-lg text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+          className="flex items-center gap-1 px-4 py-1.5 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-500 transition-colors"
         >
           {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           {isRunning ? "停止" : "開始"}
@@ -59,13 +59,13 @@ function PiPContent({
         <button
           onClick={onLap}
           disabled={!isRunning}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-muted-bg hover:bg-card-raised border border-border text-foreground rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Flag className="w-3.5 h-3.5" />
         </button>
         <button
           onClick={onReset}
-          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="p-1.5 text-muted hover:text-foreground hover:bg-muted-bg rounded-md transition-colors"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
@@ -75,7 +75,7 @@ function PiPContent({
           <button
             key={s.label}
             onClick={() => onResize(s.width, s.height)}
-            className="px-2 py-0.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="px-2 py-0.5 text-xs text-muted hover:text-foreground hover:bg-muted-bg rounded-sm transition-colors font-mono"
           >
             {s.label}
           </button>
@@ -92,6 +92,7 @@ export function StopwatchTimer() {
   const startTimeRef = useRef<number>(0);
   const baseElapsedRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
+  const lastPiPUpdateRef = useRef<number>(0);
 
   const { isPiP, openPiP, updatePiP, resizePiP, closePiP } = usePiP();
 
@@ -109,12 +110,12 @@ export function StopwatchTimer() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [isRunning]);
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     if (isRunning) {
       baseElapsedRef.current += performance.now() - startTimeRef.current;
     }
     setIsRunning((r) => !r);
-  };
+  }, [isRunning]);
 
   const reset = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
@@ -129,9 +130,12 @@ export function StopwatchTimer() {
     setLaps((prev) => [elapsed, ...prev]);
   }, [isRunning, elapsed]);
 
-  // PiPウィンドウのコンテンツを更新
+  // PiP の更新は 100ms に間引く（rAF の 60fps を全部 root.render に渡さない）
   useEffect(() => {
     if (!isPiP) return;
+    const now = performance.now();
+    if (now - lastPiPUpdateRef.current < 100) return;
+    lastPiPUpdateRef.current = now;
     updatePiP(
       <PiPContent
         elapsed={elapsed}
@@ -143,7 +147,7 @@ export function StopwatchTimer() {
         onResize={resizePiP}
       />
     );
-  }, [isPiP, elapsed, isRunning, laps, updatePiP, lap, reset]);
+  }, [isPiP, elapsed, isRunning, laps, updatePiP, lap, reset, toggle]);
 
   const handleOpenPiP = () => {
     const w = Math.min(Math.round(window.innerWidth * 0.3), 500);
@@ -167,19 +171,16 @@ export function StopwatchTimer() {
   const { main: lapMain, sub: lapSub } = formatTime(lastLapElapsed);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl flex flex-col h-full">
-      {/* ヘッダー */}
+    <div className="bg-card border border-border border-l-2 border-l-sky-500 p-5 rounded-md flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Timer className="w-4 h-4 text-blue-500" />
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">ストップウォッチ</h3>
+        <div className="flex items-center gap-1.5">
+          <Timer className="w-3.5 h-3.5 text-blue-400" />
+          <h3 className="text-xs font-semibold text-muted uppercase tracking-widest">ストップウォッチ</h3>
         </div>
         <button
           onClick={isPiP ? closePiP : handleOpenPiP}
-          className={`p-1.5 rounded-md transition-colors ${
-            isPiP
-              ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
-              : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+          className={`p-1.5 rounded-sm transition-colors ${
+            isPiP ? "bg-blue-950/30 text-blue-400" : "text-muted hover:bg-muted-bg hover:text-foreground"
           }`}
           title={isPiP ? "PiPを閉じる" : "ピクチャーインピクチャーで開く"}
         >
@@ -187,25 +188,23 @@ export function StopwatchTimer() {
         </button>
       </div>
 
-      {/* タイマー表示 */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <div className="text-center">
           <div className="flex items-end justify-center gap-1">
-            <span className="text-5xl font-bold font-mono text-foreground tracking-wider">{main}</span>
-            <span className="text-2xl font-bold font-mono text-gray-400 dark:text-gray-500 mb-1">.{sub}</span>
+            <span className="text-5xl font-bold font-mono text-foreground tracking-wider tabular-nums">{main}</span>
+            <span className="text-2xl font-bold font-mono text-muted mb-1">.{sub}</span>
           </div>
           {laps.length > 0 && (
-            <div className="mt-1 text-sm font-mono text-gray-400 dark:text-gray-500">
+            <div className="mt-1 text-sm font-mono text-muted">
               ラップ +{lapMain}.{lapSub}
             </div>
           )}
         </div>
 
-        {/* コントロール */}
         <div className="flex items-center gap-2">
           <button
             onClick={toggle}
-            className="flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-lg transition-colors bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-md transition-colors bg-blue-600 hover:bg-blue-500 text-white"
           >
             {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {isRunning ? "停止" : "開始"}
@@ -213,32 +212,31 @@ export function StopwatchTimer() {
           <button
             onClick={lap}
             disabled={!isRunning}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-muted-bg hover:bg-card-raised border border-border text-foreground rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Flag className="w-4 h-4" />
             ラップ
           </button>
           <button
             onClick={reset}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 text-muted hover:text-foreground hover:bg-muted-bg rounded-md transition-colors"
             title="リセット"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
 
-        {/* ラップ一覧 */}
         {laps.length > 0 && (
-          <div className="w-full max-h-28 overflow-y-auto space-y-1">
+          <div className="w-full max-h-28 overflow-y-auto">
             {laps.map((lapMs, i) => {
               const prev = i < laps.length - 1 ? laps[i + 1] : 0;
               const { main: lm, sub: ls } = formatTime(lapMs - prev);
               const { main: tm, sub: ts } = formatTime(lapMs);
               return (
-                <div key={i} className="flex items-center justify-between px-3 py-1 bg-gray-50 dark:bg-gray-800/50 rounded text-xs font-mono">
-                  <span className="text-gray-400 dark:text-gray-500">Lap {laps.length - i}</span>
-                  <span className="text-gray-600 dark:text-gray-400">{lm}.{ls}</span>
-                  <span className="text-gray-400 dark:text-gray-500">{tm}.{ts}</span>
+                <div key={i} className="flex items-center justify-between px-3 py-1.5 border-b border-border text-xs font-mono last:border-b-0">
+                  <span className="text-muted">Lap {laps.length - i}</span>
+                  <span className="text-foreground tabular-nums">{lm}.{ls}</span>
+                  <span className="text-muted tabular-nums">{tm}.{ts}</span>
                 </div>
               );
             })}

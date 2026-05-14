@@ -8,7 +8,7 @@ function parseTime(timeStr: string): Date | null {
   if (!timeStr) return null;
   const [h, m] = timeStr.split(":").map(Number);
   if (isNaN(h) || isNaN(m)) return null;
-  
+
   const d = new Date();
   d.setHours(h, m, 0, 0);
   return d;
@@ -20,7 +20,6 @@ export function NotificationHandler() {
   const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage<boolean>("work-notifications-enabled", false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
 
-  // 通知許可状態の確認
   useEffect(() => {
     if ("Notification" in window) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +63,6 @@ export function NotificationHandler() {
     return end;
   }, [startObj, offsetMinutes]);
 
-  // 定期的なチェック(10秒ごと)
   useEffect(() => {
     if (!notificationsEnabled || permission !== "granted" || !startObj || !estimatedEnd) return;
 
@@ -76,21 +74,17 @@ export function NotificationHandler() {
       const elapsedHour = Math.floor(elapsedMs / (60 * 60 * 1000));
 
       const stored = JSON.parse(window.localStorage.getItem(lastNotifiedKey) || "null");
-      // 開始時刻が変わっていたら通知履歴をリセット（別のuseEffectでリセットすると
-      // インターバルとの実行順序がずれて誤発火するため、ここで一元管理する）
       const lastNotifiedData: { startTime: string; hour: number; end: boolean } =
         stored?.startTime === startTimeStr
           ? stored
           : { startTime: startTimeStr, hour: -1, end: false };
 
-      // 1時間ごとのリマインダー通知
       if (elapsedHour > 0 && lastNotifiedData.hour < elapsedHour && now < estimatedEnd) {
         new Notification("リマインダー", { body: `稼働開始から ${elapsedHour} 時間経過しました。` });
         lastNotifiedData.hour = elapsedHour;
         window.localStorage.setItem(lastNotifiedKey, JSON.stringify(lastNotifiedData));
       }
 
-      // 終了予定時刻の通知
       if (now >= estimatedEnd && !lastNotifiedData.end) {
         new Notification("お疲れ様でした！", { body: "終了予定時刻になりました。" });
         lastNotifiedData.end = true;
@@ -98,29 +92,31 @@ export function NotificationHandler() {
       }
     };
 
-    const interval = setInterval(checkNotification, 10000); // 10秒に一度確認
+    const interval = setInterval(checkNotification, 10000);
     return () => clearInterval(interval);
   }, [notificationsEnabled, permission, startObj, estimatedEnd, startTimeStr]);
+
+  const isOn = notificationsEnabled && permission === "granted";
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        {notificationsEnabled && permission === "granted" ? (
-          <BellRing className="w-4 h-4 text-green-500" />
+        {isOn ? (
+          <BellRing className="w-4 h-4 text-green-400" />
         ) : (
-          <BellOff className="w-4 h-4 text-gray-400" />
+          <BellOff className="w-4 h-4 text-muted" />
         )}
-        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">リマインダー</span>
+        <span className="text-xs text-muted">リマインダー</span>
       </div>
       <button
         onClick={toggleNotifications}
-        className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-          notificationsEnabled && permission === "granted"
-            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+        className={`px-2.5 py-1 text-xs font-mono font-medium rounded-sm transition-colors ${
+          isOn
+            ? "bg-green-950/30 text-green-400 border border-green-900/40"
+            : "bg-muted-bg border border-border text-muted"
         }`}
       >
-        {notificationsEnabled && permission === "granted" ? "ON" : "OFF"}
+        {isOn ? "ON" : "OFF"}
       </button>
     </div>
   );

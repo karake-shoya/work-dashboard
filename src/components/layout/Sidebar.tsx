@@ -19,22 +19,22 @@ export async function Sidebar() {
   const session = await auth();
 
   return (
-    <aside className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-60 bg-card border-r border-gray-200 dark:border-gray-800 z-40">
+    <aside className="hidden lg:flex flex-col fixed top-0 left-0 h-screen w-60 bg-card border-r border-border z-40">
       {/* ロゴ */}
-      <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-4 py-4 border-b border-border">
         <div className="flex items-center gap-2">
-          <LayoutDashboard className="w-5 h-5 text-blue-500 shrink-0" />
-          <span className="text-sm font-bold text-foreground tracking-tight">Work Dashboard</span>
+          <LayoutDashboard className="w-4 h-4 text-blue-400 shrink-0" />
+          <span className="text-xs font-semibold text-foreground tracking-widest uppercase">Work Dashboard</span>
         </div>
       </div>
 
       {/* 時計 */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-4 py-3 border-b border-border">
         <Clock />
       </div>
 
       {/* 天気 */}
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800">
+      <div className="px-4 py-3 border-b border-border">
         <WeatherCompact />
       </div>
 
@@ -44,7 +44,7 @@ export async function Sidebar() {
           <a
             key={href}
             href={href}
-            className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2 text-sm text-muted hover:text-foreground hover:bg-muted-bg rounded-md transition-colors"
           >
             <Icon className="w-4 h-4 shrink-0" />
             {label}
@@ -53,18 +53,18 @@ export async function Sidebar() {
       </nav>
 
       {/* ユーザー情報 + ログアウト */}
-      <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="px-4 py-4 border-t border-border">
         <div className="flex items-center gap-2 min-w-0 mb-3">
           {session?.user?.image && (
             <img
               src={session.user.image}
               alt={session.user.name ?? ""}
-              className="w-8 h-8 rounded-full shrink-0"
+              className="w-7 h-7 rounded-full shrink-0"
             />
           )}
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{session?.user?.name}</p>
-            <p className="text-xs text-gray-400 truncate">{session?.user?.email}</p>
+            <p className="text-xs text-muted truncate">{session?.user?.email}</p>
           </div>
         </div>
         <form
@@ -75,7 +75,7 @@ export async function Sidebar() {
         >
           <button
             type="submit"
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:text-red-400 hover:bg-red-950/20 rounded-md transition-colors"
           >
             <LogOut className="w-4 h-4" />
             ログアウト

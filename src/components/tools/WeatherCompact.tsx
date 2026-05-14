@@ -63,7 +63,7 @@ export function WeatherCompact() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-gray-400 text-xs">
+      <div className="flex items-center gap-2 text-muted text-xs">
         <Loader2 className="w-3 h-3 animate-spin" />
         <span>取得中...</span>
       </div>
@@ -72,9 +72,9 @@ export function WeatherCompact() {
 
   if (error || !data) {
     return (
-      <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-muted">
         <span>{error || "データなし"}</span>
-        <button onClick={load} className="hover:text-blue-500 transition-colors ml-auto">
+        <button onClick={load} className="hover:text-foreground transition-colors ml-auto">
           <RefreshCw className="w-3 h-3" />
         </button>
       </div>
@@ -86,12 +86,12 @@ export function WeatherCompact() {
   return (
     <div className="flex items-center gap-2">
       <span className="text-base">{info.emoji}</span>
-      <span className="text-sm font-bold font-mono text-foreground">
+      <span className="text-sm font-bold font-mono text-foreground tabular-nums">
         {Math.round(data.current.temperature_2m)}°C
       </span>
-      <span className="text-xs text-gray-500 dark:text-gray-400">{info.label}</span>
+      <span className="text-xs text-muted">{info.label}</span>
       {city && (
-        <span className="flex items-center gap-0.5 text-xs text-gray-400 truncate ml-auto">
+        <span className="flex items-center gap-0.5 text-xs text-muted truncate ml-auto">
           <MapPin className="w-3 h-3 shrink-0" />
           {city}
         </span>

@@ -14,12 +14,9 @@ export function BaseDateCounter() {
     if (!isValid(baseDate)) return null;
 
     const now = new Date();
-    // 基準日からの経過日数
     const days = differenceInDays(now, baseDate);
-    // 基準日からの経過月数（概算で表示する場合はmonths + 残り日数など）
     const months = differenceInMonths(now, baseDate);
-    
-    // 経過日数から月数を引いた残りの日数を計算（簡易的な計算）
+
     const dateAfterMonths = new Date(baseDate);
     dateAfterMonths.setMonth(dateAfterMonths.getMonth() + months);
     const remainingDays = differenceInDays(now, dateAfterMonths);
@@ -28,41 +25,39 @@ export function BaseDateCounter() {
   }, [baseDateStr]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl space-y-4">
+    <div className="bg-card border border-border border-l-2 border-l-purple-500 p-5 rounded-md space-y-4">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-          <CalendarDays className="w-4 h-4" />
-          基準日（プロジェクト開始日など）
+        <label className="text-xs font-semibold text-muted uppercase tracking-widest flex items-center gap-1.5">
+          <CalendarDays className="w-3.5 h-3.5" />
+          基準日
         </label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={baseDateStr}
           onChange={(e) => setBaseDateStr(e.target.value)}
-          className="px-3 py-1.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+          className="px-3 py-1.5 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 font-mono text-xs"
         />
       </div>
 
       {stats ? (
-        <div className="flex items-center gap-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-900/50">
-          <div className="flex items-center justify-center w-12 h-12 bg-white dark:bg-purple-800 rounded-full shadow-sm text-purple-600 dark:text-purple-300">
-            <Flag className="w-6 h-6" />
-          </div>
+        <div className="flex items-center gap-5 p-4 bg-card-raised border border-border rounded-md">
+          <Flag className="w-5 h-5 text-purple-400 shrink-0" />
           <div>
-            <div className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-1">
+            <div className="text-xs font-semibold text-muted uppercase tracking-widest mb-1">
               基準日からの経過
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-foreground">
-                {Math.max(0, stats.days)}<span className="text-lg font-medium text-gray-500 dark:text-gray-400 ml-1">日目</span>
+              <span className="text-3xl font-bold font-mono text-foreground tabular-nums">
+                {Math.max(0, stats.days)}<span className="text-lg font-medium text-muted ml-1">日目</span>
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+              <span className="text-xs text-muted font-mono">
                 （{Math.max(0, stats.months)}ヶ月と{Math.max(0, stats.remainingDays)}日）
               </span>
             </div>
           </div>
         </div>
       ) : (
-        <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700">
+        <div className="p-4 text-center text-sm text-muted bg-muted-bg rounded-md border border-dashed border-border">
           基準日を設定すると経過日数が表示されます
         </div>
       )}

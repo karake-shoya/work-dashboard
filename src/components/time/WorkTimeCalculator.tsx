@@ -5,12 +5,13 @@ import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { NotificationHandler } from "@/components/time/NotificationHandler";
 import { Play, Coffee, Bell } from "lucide-react";
 
-// Helper: "HH:MM" 形式から Date オブジェクトを作成（当日の日付ベース）
+const BREAK_DURATION_MS = 60 * 60 * 1000;
+
 function parseTime(timeStr: string): Date | null {
   if (!timeStr) return null;
   const [h, m] = timeStr.split(":").map(Number);
   if (isNaN(h) || isNaN(m)) return null;
-  
+
   const d = new Date();
   d.setHours(h, m, 0, 0);
   return d;
@@ -20,12 +21,10 @@ export function WorkTimeCalculator() {
   const [startTimeStr, setStartTimeStr] = useLocalStorage<string>("work-start-time", "");
   const [includesBreak, setIncludesBreak] = useLocalStorage<boolean>("work-includes-break", true);
   const [offsetMinutes, setOffsetMinutes] = useLocalStorage<number>("work-offset-minutes", 0);
-  
+
   const [now, setNow] = useState<Date | null>(null);
 
-  // 初回マウントと毎秒更新
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     setNow(new Date());
     const timer = setInterval(() => {
       setNow(new Date());
@@ -47,14 +46,10 @@ export function WorkTimeCalculator() {
     }
   };
 
-  // 経過時間計算
   const startObj = useMemo(() => parseTime(startTimeStr), [startTimeStr]);
   const elapsedMs = (startObj && now) ? Math.max(0, now.getTime() - startObj.getTime()) : 0;
-  
-  // 休憩時間の減算（チェックが入っており、かつ1時間以上経過している場合？）
-  // もしくは単純に「休憩ありなら稼働時間から1時間引く」（ただし0未満にしない）
-  const breakDeductionMs = includesBreak ? 60 * 60 * 1000 : 0;
-  const activeWorkMs = Math.max(0, elapsedMs - breakDeductionMs);
+
+  const activeWorkMs = Math.max(0, elapsedMs - (includesBreak ? BREAK_DURATION_MS : 0));
 
   const formatDuration = (ms: number) => {
     const totalMinutes = Math.floor(ms / (1000 * 60));
@@ -63,11 +58,9 @@ export function WorkTimeCalculator() {
     return `${h}h ${m}m`;
   };
 
-  // 終了予定時刻計算
   const estimatedEnd = useMemo(() => {
     if (!startObj) return null;
     const end = new Date(startObj.getTime());
-    // 定時9時間 + オフセット分
     end.setHours(end.getHours() + 9);
     end.setMinutes(end.getMinutes() + offsetMinutes);
     return end;
@@ -75,14 +68,12 @@ export function WorkTimeCalculator() {
 
   const endStr = estimatedEnd ? estimatedEnd.toLocaleTimeString("ja-JP", { hour12: false, hour: '2-digit', minute: '2-digit' }) : "--:--";
 
-  // オフセット調整ボタンの共通スタイル
-  const offsetBtnClass = "px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded transition-colors";
+  const offsetBtnClass = "px-3 py-1 text-xs font-mono bg-muted-bg hover:bg-card-raised border border-border text-foreground rounded-sm transition-colors";
 
   return (
-    <div className="space-y-5 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl">
-      {/* 開始時刻入力 */}
+    <div className="space-y-5 bg-card border border-border border-l-2 border-l-blue-500 p-5 rounded-md">
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-xs font-semibold text-muted uppercase tracking-widest">
           開始時刻
         </label>
         <div className="flex items-center gap-2">
@@ -90,49 +81,47 @@ export function WorkTimeCalculator() {
             type="time"
             value={startTimeStr}
             onChange={(e) => setStartTimeStr(e.target.value)}
-            className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+            className="flex-1 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 font-mono text-sm"
           />
           <button
             onClick={handleSetNow}
-            className="shrink-0 px-4 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-medium rounded-lg transition-colors"
+            className="shrink-0 px-4 py-2 bg-blue-950/20 hover:bg-blue-950/30 text-blue-400 font-medium rounded-md border border-blue-900/40 transition-colors text-sm"
           >
             現在時刻
           </button>
         </div>
       </div>
 
-      {/* 稼働時間表示 */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800">
-          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-            <Play className="w-4 h-4" /> 経過時間
+        <div className="p-4 bg-card-raised border border-border rounded-md">
+          <div className="text-xs text-muted mb-1 flex items-center gap-1">
+            <Play className="w-3 h-3" /> 経過時間
           </div>
-          <div className="text-2xl font-bold font-mono text-foreground">
+          <div className="text-2xl font-bold font-mono text-foreground tabular-nums">
             {startTimeStr ? formatDuration(elapsedMs) : "-h -m"}
           </div>
         </div>
-        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/50">
-          <div className="text-sm text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1">
-            <Bell className="w-4 h-4" /> 実働時間
+        <div className="p-4 bg-blue-950/20 border border-blue-900/40 rounded-md">
+          <div className="text-xs text-blue-400 mb-1 flex items-center gap-1">
+            <Bell className="w-3 h-3" /> 実働時間
           </div>
-          <div className="text-2xl font-bold font-mono text-blue-700 dark:text-blue-300">
+          <div className="text-2xl font-bold font-mono text-blue-400 tabular-nums">
             {startTimeStr ? formatDuration(activeWorkMs) : "-h -m"}
           </div>
         </div>
       </div>
 
-      {/* 終了時刻調整 */}
-      <div className="pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+      <div className="pt-4 border-t border-border space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">予定終了時刻</span>
-          <span className="text-xl font-bold text-foreground font-mono">{endStr}</span>
+          <span className="text-xs font-semibold text-muted uppercase tracking-widest">予定終了時刻</span>
+          <span className="text-xl font-bold text-foreground font-mono tabular-nums">{endStr}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
           <button onClick={() => setOffsetMinutes(prev => prev - 30)} className={offsetBtnClass}>
             -30m
           </button>
-          <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-12 text-center">
+          <span className="text-xs font-mono text-muted w-12 text-center">
             {offsetMinutes >= 0 ? `+${offsetMinutes}` : offsetMinutes}m
           </span>
           <button onClick={() => setOffsetMinutes(prev => prev + 30)} className={offsetBtnClass}>
@@ -143,14 +132,13 @@ export function WorkTimeCalculator() {
           </button>
           <button
             onClick={handleClear}
-            className="px-3 py-1 text-sm bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded transition-colors"
+            className="px-3 py-1 text-xs font-mono bg-red-950/20 hover:bg-red-950/30 text-red-400 border border-red-900/30 rounded-sm transition-colors"
             title="開始時刻をクリア"
           >
             リセット
           </button>
         </div>
 
-        {/* 休憩トグル */}
         <label className="flex items-center cursor-pointer">
           <div className="relative">
             <input
@@ -159,10 +147,10 @@ export function WorkTimeCalculator() {
               checked={includesBreak}
               onChange={(e) => setIncludesBreak(e.target.checked)}
             />
-            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${includesBreak ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'}`}></div>
+            <div className={`block w-10 h-6 outline-none rounded-full transition-colors ${includesBreak ? 'bg-blue-500' : 'bg-border'}`}></div>
             <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${includesBreak ? 'transform translate-x-4' : ''}`}></div>
           </div>
-          <div className="ml-3 text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
+          <div className="ml-3 text-sm text-muted flex items-center gap-1">
             <Coffee className="w-4 h-4" />
             休憩(-1h)
           </div>

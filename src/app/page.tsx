@@ -17,7 +17,7 @@ export default function Home() {
       <Sidebar />
 
       {/* モバイル用トップヘッダー */}
-      <header className="lg:hidden flex items-center gap-2 px-4 py-3 bg-card border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30">
+      <header className="lg:hidden flex items-center gap-2 px-4 py-3 bg-background border-b border-border sticky top-0 z-30">
         <LayoutDashboard className="w-4 h-4 text-blue-500" />
         <span className="text-sm font-bold text-foreground">Work Dashboard</span>
       </header>
@@ -26,7 +26,7 @@ export default function Home() {
 
         {/* 時間管理 */}
         <section id="time-management" className="scroll-mt-4 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-widest border-b border-border pb-2 border-l-2 border-l-blue-500 pl-3">
             Time Management
           </h2>
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
@@ -38,7 +38,7 @@ export default function Home() {
 
         {/* タスク・進捗 */}
         <section id="tasks" className="scroll-mt-4 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-widest border-b border-border pb-2 border-l-2 border-l-purple-500 pl-3">
             Progress & Tasks
           </h2>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -54,7 +54,7 @@ export default function Home() {
 
         {/* 副業管理 */}
         <section id="side-job" className="scroll-mt-4 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-widest border-b border-border pb-2 border-l-2 border-l-green-500 pl-3">
             副業管理
           </h2>
           <SideJobCalculator />
@@ -62,7 +62,7 @@ export default function Home() {
 
         {/* ツール */}
         <section id="tools" className="scroll-mt-4 space-y-4">
-          <h2 className="text-lg font-semibold text-foreground border-b border-gray-200 dark:border-gray-800 pb-2">
+          <h2 className="text-xs font-semibold text-muted uppercase tracking-widest border-b border-border pb-2 border-l-2 border-l-sky-500 pl-3">
             Tools
           </h2>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">

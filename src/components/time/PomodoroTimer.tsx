@@ -15,6 +15,11 @@ const PIP_SIZES = [
   { label: "L", width: 460, height: 340 },
 ];
 
+const MODE_CONFIG = {
+  work:  { label: "作業中", accent: "text-orange-400", btn: "bg-orange-500 hover:bg-orange-400", tab: "bg-orange-950/30 text-orange-400 border border-orange-900/40", pip: "bg-orange-950/30 text-orange-400", stroke: "stroke-orange-500" },
+  break: { label: "休憩中", accent: "text-green-400",  btn: "bg-green-500 hover:bg-green-400",   tab: "bg-green-950/30 text-green-400 border border-green-900/40",   pip: "bg-green-950/30 text-green-400",   stroke: "stroke-green-500"  },
+} satisfies Record<Mode, { label: string; accent: string; btn: string; tab: string; pip: string; stroke: string }>;
+
 function PiPContent({
   minutes, seconds, mode, isRunning, sessions, onToggle, onReset, onResize,
 }: {
@@ -27,43 +32,40 @@ function PiPContent({
   onReset: () => void;
   onResize: (width: number, height: number) => void;
 }) {
-  const accent = mode === "work" ? "text-orange-500" : "text-green-500";
-  const btnBg = mode === "work"
-    ? "bg-orange-500 hover:bg-orange-600"
-    : "bg-green-500 hover:bg-green-600";
+  const cfg = MODE_CONFIG[mode];
   return (
-    <div className="bg-white dark:bg-gray-900 h-full flex flex-col items-center justify-center gap-3 p-4">
-      <span className={`text-xs font-medium ${accent}`}>
-        {mode === "work" ? "作業中" : "休憩中"}
+    <div className="bg-background h-full flex flex-col items-center justify-center gap-3 p-4">
+      <span className={`text-xs font-medium uppercase tracking-widest ${cfg.accent}`}>
+        {cfg.label}
       </span>
-      <span className="text-5xl font-bold font-mono text-foreground tracking-wider">
+      <span className="text-5xl font-bold font-mono text-foreground tracking-wider tabular-nums">
         {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
       </span>
       <div className="flex items-center gap-2">
         <button
           onClick={onToggle}
-          className={`flex items-center gap-1 px-4 py-1.5 text-sm font-medium rounded-lg text-white transition-colors ${btnBg}`}
+          className={`flex items-center gap-1 px-4 py-1.5 text-sm font-medium rounded-md text-white transition-colors ${cfg.btn}`}
         >
           {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
           {isRunning ? "一時停止" : "開始"}
         </button>
         <button
           onClick={onReset}
-          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          className="p-1.5 text-muted hover:text-foreground hover:bg-muted-bg rounded-md transition-colors"
           title="リセット"
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
-      <span className="text-xs text-gray-400 dark:text-gray-500">
-        <span className="font-bold text-foreground">{sessions}</span> 回完了
+      <span className="text-xs text-muted">
+        <span className="font-bold font-mono text-foreground">{sessions}</span> 回完了
       </span>
       <div className="flex items-center gap-1">
         {PIP_SIZES.map((s) => (
           <button
             key={s.label}
             onClick={() => onResize(s.width, s.height)}
-            className="px-2 py-0.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            className="px-2 py-0.5 text-xs text-muted hover:text-foreground hover:bg-muted-bg rounded-sm transition-colors font-mono"
           >
             {s.label}
           </button>
@@ -82,7 +84,7 @@ export function PomodoroTimer() {
   const [sessions, setSessions] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timerFinishedRef = useRef(false);
+  const handleFinishRef = useRef<() => void>(() => {});
 
   const { isPiP, openPiP, updatePiP, resizePiP, closePiP } = usePiP();
 
@@ -118,7 +120,20 @@ export function PomodoroTimer() {
     [workMinutes, breakMinutes]
   );
 
-  // カウントダウン
+  // handleFinish を ref に保持し、インターバルコールバックから安全に呼び出す
+  useEffect(() => {
+    handleFinishRef.current = () => {
+      if (mode === "work") {
+        setSessions((s) => s + 1);
+        notify("お疲れ様です！", `${workMinutes}分経過しました。休憩しましょう。`);
+        switchMode("break");
+      } else {
+        notify("休憩終了", "作業を再開しましょう。");
+        switchMode("work");
+      }
+    };
+  }, [mode, notify, switchMode, workMinutes]);
+
   useEffect(() => {
     if (!isRunning) {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -128,7 +143,7 @@ export function PomodoroTimer() {
     intervalRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
-          timerFinishedRef.current = true;
+          setTimeout(() => handleFinishRef.current(), 0);
           return 0;
         }
         return prev - 1;
@@ -140,27 +155,11 @@ export function PomodoroTimer() {
     };
   }, [isRunning]);
 
-  // タイマー終了時に通知とモード切替を実行
-  useEffect(() => {
-    if (!timerFinishedRef.current) return;
-    timerFinishedRef.current = false;
-
-    if (mode === "work") {
-      setSessions((s) => s + 1);
-      notify("お疲れ様です！", `${workMinutes}分経過しました。休憩しましょう。`);
-      switchMode("break");
-    } else {
-      notify("休憩終了", "作業を再開しましょう。");
-      switchMode("work");
-    }
-  }, [secondsLeft, mode, notify, switchMode, workMinutes]);
-
   const reset = useCallback(() => {
     setIsRunning(false);
     setSecondsLeft(mode === "work" ? workMinutes * 60 : breakMinutes * 60);
   }, [mode, workMinutes, breakMinutes]);
 
-  // PiPウィンドウのコンテンツを毎フレーム更新
   useEffect(() => {
     if (!isPiP) return;
     updatePiP(
@@ -195,50 +194,41 @@ export function PomodoroTimer() {
     );
   };
 
-  const handleWorkMinutesChange = (value: number) => {
+  const handleMinutesChange = (targetMode: Mode, value: number) => {
     const clamped = Math.min(99, Math.max(1, value));
-    setWorkMinutes(clamped);
-    if (mode === "work" && !isRunning) {
-      setSecondsLeft(clamped * 60);
-    }
-  };
-
-  const handleBreakMinutesChange = (value: number) => {
-    const clamped = Math.min(99, Math.max(1, value));
-    setBreakMinutes(clamped);
-    if (mode === "break" && !isRunning) {
-      setSecondsLeft(clamped * 60);
+    if (targetMode === "work") {
+      setWorkMinutes(clamped);
+      if (mode === "work" && !isRunning) setSecondsLeft(clamped * 60);
+    } else {
+      setBreakMinutes(clamped);
+      if (mode === "break" && !isRunning) setSecondsLeft(clamped * 60);
     }
   };
 
   const circumference = 2 * Math.PI * 70;
   const strokeDashoffset = circumference * (1 - progress / 100);
+  const cfg = MODE_CONFIG[mode];
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl flex flex-col h-full">
-      {/* ヘッダー */}
+    <div className="bg-card border border-border border-l-2 border-l-orange-500 p-5 rounded-md flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-          <Timer className="w-4 h-4 text-orange-500" />
-          ポモドーロタイマー
+        <h3 className="text-xs font-semibold text-muted uppercase tracking-widest flex items-center gap-1.5">
+          <Timer className="w-3.5 h-3.5 text-orange-400" />
+          ポモドーロ
         </h3>
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => switchMode("work")}
-            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-              mode === "work"
-                ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${
+              mode === "work" ? MODE_CONFIG.work.tab : "text-muted hover:bg-muted-bg"
             }`}
           >
             作業
           </button>
           <button
             onClick={() => switchMode("break")}
-            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-              mode === "break"
-                ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400"
-                : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+            className={`px-2.5 py-1 text-xs font-medium rounded-sm transition-colors ${
+              mode === "break" ? MODE_CONFIG.break.tab : "text-muted hover:bg-muted-bg"
             }`}
           >
             <Coffee className="w-3 h-3 inline mr-1" />
@@ -246,10 +236,8 @@ export function PomodoroTimer() {
           </button>
           <button
             onClick={() => setShowSettings((s) => !s)}
-            className={`p-1.5 rounded-md transition-colors ${
-              showSettings
-                ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+            className={`p-1.5 rounded-sm transition-colors ${
+              showSettings ? "bg-muted-bg text-foreground" : "text-muted hover:bg-muted-bg hover:text-foreground"
             }`}
             title="時間設定"
           >
@@ -257,11 +245,7 @@ export function PomodoroTimer() {
           </button>
           <button
             onClick={isPiP ? closePiP : handleOpenPiP}
-            className={`p-1.5 rounded-md transition-colors ${
-              isPiP
-                ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
-                : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
-            }`}
+            className={`p-1.5 rounded-sm transition-colors ${isPiP ? cfg.pip : "text-muted hover:bg-muted-bg hover:text-foreground"}`}
             title={isPiP ? "PiPを閉じる" : "ピクチャーインピクチャーで開く"}
           >
             <PictureInPicture2 className="w-3.5 h-3.5" />
@@ -269,98 +253,83 @@ export function PomodoroTimer() {
         </div>
       </div>
 
-      {/* 設定パネル */}
       {showSettings && (
-        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg flex items-center gap-4">
+        <div className="mb-4 p-3 bg-card-raised border border-border rounded-md flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">作業</span>
+            <span className="text-xs text-muted whitespace-nowrap">作業</span>
             <input
               type="number"
               min={1}
               max={99}
               value={workMinutes}
               disabled={isRunning}
-              onChange={(e) => handleWorkMinutesChange(Number(e.target.value))}
-              className="w-14 px-2 py-1 text-xs text-center border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              onChange={(e) => handleMinutesChange("work", Number(e.target.value))}
+              className="w-14 px-2 py-1 text-xs text-center border border-border rounded-sm bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed font-mono"
             />
-            <span className="text-xs text-gray-400">分</span>
+            <span className="text-xs text-muted">分</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">休憩</span>
+            <span className="text-xs text-muted whitespace-nowrap">休憩</span>
             <input
               type="number"
               min={1}
               max={99}
               value={breakMinutes}
               disabled={isRunning}
-              onChange={(e) => handleBreakMinutesChange(Number(e.target.value))}
-              className="w-14 px-2 py-1 text-xs text-center border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+              onChange={(e) => handleMinutesChange("break", Number(e.target.value))}
+              className="w-14 px-2 py-1 text-xs text-center border border-border rounded-sm bg-background text-foreground disabled:opacity-50 disabled:cursor-not-allowed font-mono"
             />
-            <span className="text-xs text-gray-400">分</span>
+            <span className="text-xs text-muted">分</span>
           </div>
           {isRunning && (
-            <span className="text-xs text-gray-400 ml-auto">タイマー停止中のみ変更可</span>
+            <span className="text-xs text-muted ml-auto">タイマー停止中のみ変更可</span>
           )}
         </div>
       )}
 
-      {/* 円形プログレス */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <div className="relative w-44 h-44">
           <svg className="w-44 h-44 -rotate-90" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="70" fill="none" strokeWidth="6" stroke="var(--border)" />
             <circle
               cx="80" cy="80" r="70"
               fill="none"
-              stroke="currentColor"
-              strokeWidth="8"
-              className="text-gray-100 dark:text-gray-800"
-            />
-            <circle
-              cx="80" cy="80" r="70"
-              fill="none"
-              strokeWidth="8"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
-              className={`transition-all duration-1000 ${
-                mode === "work" ? "stroke-orange-500" : "stroke-green-500"
-              }`}
+              className={`transition-all duration-1000 ${cfg.stroke}`}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-            <span className="text-3xl font-bold font-mono text-foreground tracking-wider">
+            <span className="text-3xl font-bold font-mono text-foreground tracking-wider tabular-nums">
               {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
             </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              {mode === "work" ? "作業中" : "休憩中"}
+            <span className={`text-xs uppercase tracking-widest font-medium ${cfg.accent}`}>
+              {cfg.label}
             </span>
           </div>
         </div>
 
-        {/* コントロール */}
         <div className="flex items-center gap-3">
           <button
             onClick={async () => {
               await requestNotificationPermission();
               setIsRunning((r) => !r);
             }}
-            className={`flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
-              mode === "work"
-                ? "bg-orange-500 hover:bg-orange-600 text-white"
-                : "bg-green-500 hover:bg-green-600 text-white"
-            }`}
+            className={`flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-md transition-colors ${cfg.btn} text-white`}
           >
             {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             {isRunning ? "一時停止" : "開始"}
           </button>
           <button
             onClick={reset}
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 text-muted hover:text-foreground hover:bg-muted-bg rounded-md transition-colors"
             title="リセット"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400">
+          <span className="text-xs text-muted font-mono">
             <span className="font-bold text-foreground">{sessions}</span> 回完了
           </span>
         </div>

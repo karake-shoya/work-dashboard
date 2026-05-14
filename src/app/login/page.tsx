@@ -11,10 +11,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="bg-card border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-10 flex flex-col items-center gap-6 w-full max-w-sm">
+      <div className="bg-card border border-border rounded-md p-8 flex flex-col items-center gap-6 w-full max-w-sm">
         <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Work Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">サインインして続ける</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Work Dashboard</h1>
+          <p className="text-xs text-muted uppercase tracking-widest">サインインして続ける</p>
         </div>
 
         {/* Google ログイン */}
@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         >
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-card-raised border border-border rounded-md text-sm font-medium text-foreground hover:bg-muted-bg transition-colors"
           >
             <GoogleIcon />
             Google でサインイン
@@ -37,10 +37,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {/* 区切り線 */}
         <div className="relative w-full">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+            <span className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-card px-2 text-gray-400">または</span>
+            <span className="bg-card px-2 text-muted">または</span>
           </div>
         </div>
 
@@ -68,14 +68,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             name="password"
             placeholder="ゲストパスワード"
             required
-            className="w-full px-3 py-2.5 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2.5 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 font-mono"
           />
           {error && (
-            <p className="text-xs text-red-500">パスワードが正しくありません</p>
+            <p className="text-xs text-red-400">パスワードが正しくありません</p>
           )}
           <button
             type="submit"
-            className="w-full px-4 py-2.5 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+            className="w-full px-4 py-2.5 bg-foreground text-background text-sm font-medium rounded-md hover:opacity-90 transition-opacity"
           >
             ゲストとしてログイン
           </button>

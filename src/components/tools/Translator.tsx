@@ -11,7 +11,7 @@ export function Translator() {
   const [targetLang, setTargetLang] = useState<"EN" | "JA">("EN");
 
   const detectTargetLang = (text: string): "EN" | "JA" => {
-    return /[\u3040-\u30FF\u4E00-\u9FFF]/.test(text) ? "EN" : "JA";
+    return /[぀-ヿ一-鿿]/.test(text) ? "EN" : "JA";
   };
 
   const handleTranslate = async (text = sourceText, lang = targetLang) => {
@@ -54,16 +54,16 @@ export function Translator() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-5 rounded-xl space-y-4">
-      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-        <h3 className="text-lg font-medium text-foreground flex items-center gap-2">
-          <Languages className="w-5 h-5 text-blue-500" />
+    <div className="bg-card border border-border border-l-2 border-l-blue-500 p-5 rounded-md space-y-4">
+      <div className="flex items-center justify-between border-b border-border pb-3">
+        <h3 className="text-xs font-semibold text-muted uppercase tracking-widest flex items-center gap-1.5">
+          <Languages className="w-3.5 h-3.5 text-blue-400" />
           翻訳 (DeepL)
         </h3>
       </div>
 
       {errorInfo && (
-        <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-lg border border-red-100 dark:border-red-900/50">
+        <div className="p-3 text-sm text-red-400 bg-red-950/20 rounded-md border border-red-900/40">
           {errorInfo}
         </div>
       )}
@@ -74,21 +74,21 @@ export function Translator() {
           onChange={(e) => setSourceText(e.target.value)}
           onPaste={handlePaste}
           placeholder="翻訳するテキストを貼り付け、または入力して翻訳実行..."
-          className="w-full h-24 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white resize-none text-sm"
+          className="w-full h-24 px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 resize-none text-sm font-mono"
         />
 
         <div className="flex items-center justify-between">
-          <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1 border border-gray-200 dark:border-gray-700">
-            <span className="px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300">
+          <div className="flex bg-muted-bg rounded-md p-0.5 border border-border">
+            <span className="px-3 py-1 text-xs font-medium text-muted">
               Auto Detect
             </span>
             <button
               onClick={toggleLang}
-              className="px-2 text-gray-400 hover:text-foreground transition-colors"
+              className="px-2 text-muted hover:text-foreground transition-colors"
             >
               <ArrowRightLeft className="w-4 h-4" />
             </button>
-            <span className="px-3 py-1 text-xs font-medium bg-white dark:bg-gray-600 text-foreground rounded border border-gray-200 dark:border-gray-500 shadow-sm">
+            <span className="px-3 py-1 text-xs font-medium bg-card-raised text-foreground rounded-sm border border-border">
               {targetLang === "EN" ? "English" : "Japanese"}
             </span>
           </div>
@@ -96,20 +96,20 @@ export function Translator() {
           <button
             onClick={() => handleTranslate()}
             disabled={isTranslating || !sourceText.trim()}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-md flex items-center gap-2 transition-colors"
           >
             {isTranslating ? <Loader2 className="w-4 h-4 animate-spin" /> : "翻訳実行"}
           </button>
         </div>
 
         {translatedText && (
-          <div className="mt-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-lg relative group">
-            <p className="text-sm text-foreground whitespace-pre-wrap">
+          <div className="mt-4 p-4 bg-card-raised border border-border rounded-md relative group">
+            <p className="text-sm text-foreground whitespace-pre-wrap font-mono">
               {translatedText}
             </p>
             <button
               onClick={() => navigator.clipboard.writeText(translatedText)}
-              className="absolute top-2 right-2 p-1.5 bg-white dark:bg-gray-800 text-gray-400 hover:text-blue-500 shadow-sm border border-gray-200 dark:border-gray-700 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+              className="absolute top-2 right-2 p-1.5 bg-card border border-border text-muted hover:text-foreground rounded-sm transition-colors opacity-0 group-hover:opacity-100"
               title="コピー"
             >
               <ClipboardPaste className="w-4 h-4" />

@@ -92,7 +92,7 @@ export function Weather() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-6 text-gray-400">
+      <div className="flex justify-center items-center py-6 text-muted">
         <Loader2 className="w-5 h-5 animate-spin" />
       </div>
     );
@@ -100,7 +100,7 @@ export function Weather() {
 
   if (error) {
     return (
-      <div className="p-3 text-sm text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 rounded-lg">
+      <div className="p-3 text-sm text-amber-400 bg-amber-950/20 border border-amber-900/40 rounded-md">
         {error}
       </div>
     );
@@ -117,25 +117,25 @@ export function Weather() {
         <div className="flex items-center gap-2">
           <span className="text-3xl">{current.emoji}</span>
           <div>
-            <div className="text-2xl font-bold font-mono text-foreground">
+            <div className="text-2xl font-bold font-mono text-foreground tabular-nums">
               {Math.round(weather.current.temperature_2m)}°C
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">{current.label}</div>
+            <div className="text-xs text-muted">{current.label}</div>
           </div>
         </div>
         <div className="text-right space-y-1">
           {city && (
-            <div className="flex items-center justify-end gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-end gap-1 text-xs text-muted">
               <MapPin className="w-3 h-3" />
               {city}
             </div>
           )}
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-muted font-mono">
             風速 {Math.round(weather.current.wind_speed_10m)} km/h
           </div>
           <button
             onClick={load}
-            className="text-gray-400 hover:text-blue-500 transition-colors"
+            className="text-muted hover:text-foreground transition-colors"
             title="更新"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -150,14 +150,14 @@ export function Weather() {
           return (
             <div
               key={i}
-              className="flex flex-col items-center gap-1 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-800"
+              className="flex flex-col items-center gap-1 p-2 bg-muted-bg border border-border rounded-sm"
             >
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</span>
+              <span className="text-xs text-muted font-medium font-mono">{label}</span>
               <span className="text-lg">{info.emoji}</span>
-              <div className="text-xs font-medium text-foreground">
+              <div className="text-xs font-medium font-mono text-foreground tabular-nums">
                 {Math.round(weather.daily.temperature_2m_max[i])}°
-                <span className="text-gray-400 dark:text-gray-600 mx-0.5">/</span>
-                <span className="text-gray-400 dark:text-gray-500">{Math.round(weather.daily.temperature_2m_min[i])}°</span>
+                <span className="text-muted mx-0.5">/</span>
+                <span className="text-muted">{Math.round(weather.daily.temperature_2m_min[i])}°</span>
               </div>
             </div>
           );

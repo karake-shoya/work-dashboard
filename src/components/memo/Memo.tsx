@@ -22,19 +22,19 @@ export function Memo() {
   }, [mode]);
 
   return (
-    <section className="bg-card text-card-foreground rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col gap-4">
-      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <FileText className="w-5 h-5 text-yellow-500" />
+    <section className="bg-card border border-border border-l-2 border-l-yellow-500 rounded-md p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between border-b border-border pb-3">
+        <h2 className="text-xs font-semibold text-muted uppercase tracking-widest flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-yellow-400" />
           メモ
         </h2>
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1 gap-1">
+        <div className="flex bg-muted-bg border border-border rounded-md p-0.5 gap-0.5">
           <button
             onClick={() => setMode("edit")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-sm transition-colors ${
               mode === "edit"
-                ? "bg-white dark:bg-gray-700 text-foreground shadow-sm"
-                : "text-gray-500 hover:text-foreground"
+                ? "bg-card-raised border border-border text-foreground"
+                : "text-muted hover:text-foreground"
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -42,10 +42,10 @@ export function Memo() {
           </button>
           <button
             onClick={() => setMode("preview")}
-            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-sm transition-colors ${
               mode === "preview"
-                ? "bg-white dark:bg-gray-700 text-foreground shadow-sm"
-                : "text-gray-500 hover:text-foreground"
+                ? "bg-card-raised border border-border text-foreground"
+                : "text-muted hover:text-foreground"
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -60,23 +60,23 @@ export function Memo() {
           value={isMounted ? content : ""}
           onChange={(e) => setContent(e.target.value)}
           placeholder={"# メモ\n\nMarkdownで書けます。\n- リスト\n- **太字**\n- `コード`"}
-          className="w-full h-64 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none dark:text-white resize-none text-sm font-mono leading-relaxed"
+          className="w-full h-64 px-4 py-3 bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-foreground/20 resize-none text-sm font-mono leading-relaxed"
         />
       ) : (
-        <div className="min-h-64 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto">
+        <div className="min-h-64 px-4 py-3 bg-background border border-border rounded-md overflow-auto">
           {isMounted && content ? (
             <div className="prose prose-sm dark:prose-invert max-w-none">
               <ReactMarkdown>{content}</ReactMarkdown>
             </div>
           ) : (
-            <p className="text-sm text-gray-400 dark:text-gray-600 italic">
+            <p className="text-sm text-muted italic">
               プレビューするコンテンツがありません
             </p>
           )}
         </div>
       )}
 
-      <p className="text-xs text-gray-400 dark:text-gray-600 text-right">
+      <p className="text-xs text-muted text-right font-mono">
         自動保存済み（ブラウザのlocalStorageに保存）
       </p>
     </section>

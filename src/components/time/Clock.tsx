@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Clock as ClockIcon } from "lucide-react";
 
 export function Clock() {
   const [time, setTime] = useState<Date | null>(null);
@@ -20,14 +19,13 @@ export function Clock() {
 
   if (!time) {
     return (
-      <div className="flex items-center space-x-2 text-foreground h-8 animate-pulse">
-        <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-        <div className="w-24 h-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="space-y-1 animate-pulse">
+        <div className="w-28 h-5 bg-border rounded-sm"></div>
+        <div className="w-20 h-3 bg-border rounded-sm ml-0"></div>
       </div>
     );
   }
 
-  // 日本標準時前提として、HH:MM:SS形式にフォーマット
   const timeString = time.toLocaleTimeString("ja-JP", {
     hour12: false,
     hour: "2-digit",
@@ -44,11 +42,10 @@ export function Clock() {
 
   return (
     <div className="space-y-0.5">
-      <div className="flex items-center gap-2 text-foreground">
-        <ClockIcon className="w-4 h-4 text-blue-500 shrink-0" />
-        <span className="text-lg font-bold font-mono tracking-wider">{timeString}</span>
+      <div className="text-lg font-bold font-mono tracking-wider text-foreground tabular-nums">
+        {timeString}
       </div>
-      <div className="text-xs text-gray-500 dark:text-gray-400 pl-6">{dateString}</div>
+      <div className="text-xs text-muted font-mono">{dateString}</div>
     </div>
   );
 }
