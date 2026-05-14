@@ -85,6 +85,8 @@ export function PomodoroTimer() {
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const handleFinishRef = useRef<() => void>(() => {});
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const isUnlockingRef = useRef(false);
 
   const { isPiP, openPiP, updatePiP, resizePiP, closePiP } = usePiP();
 
@@ -93,10 +95,41 @@ export function PomodoroTimer() {
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
-  const playSound = useCallback(() => {
+  // ブラウザの自動再生ポリシーによりタイマー完了時の再生がブロックされるのを防ぐ
+  const unlockAudio = useCallback(() => {
+    if (audioRef.current || isUnlockingRef.current) return;
+    isUnlockingRef.current = true;
     const audio = new Audio("/timer-complete.m4a");
-    audio.play().catch(() => {});
+    audio.volume = 0;
+    audio.play().then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 1;
+      audioRef.current = audio;
+    }).catch(() => {
+      isUnlockingRef.current = false;
+    });
   }, []);
+
+  const playSound = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+    };
+  }, []);
+
+  const handleToggle = useCallback(() => {
+    unlockAudio();
+    setIsRunning((r) => !r);
+  }, [unlockAudio]);
 
   const notify = useCallback((title: string, body: string) => {
     playSound();
@@ -169,12 +202,12 @@ export function PomodoroTimer() {
         mode={mode}
         isRunning={isRunning}
         sessions={sessions}
-        onToggle={() => setIsRunning((r) => !r)}
+        onToggle={handleToggle}
         onReset={reset}
         onResize={resizePiP}
       />
     );
-  }, [isPiP, minutes, seconds, mode, isRunning, sessions, updatePiP, reset]);
+  }, [isPiP, minutes, seconds, mode, isRunning, sessions, updatePiP, reset, handleToggle]);
 
   const handleOpenPiP = async () => {
     const w = Math.min(Math.round(window.innerWidth * 0.3), 500);
@@ -186,7 +219,7 @@ export function PomodoroTimer() {
         mode={mode}
         isRunning={isRunning}
         sessions={sessions}
-        onToggle={() => setIsRunning((r) => !r)}
+        onToggle={handleToggle}
         onReset={reset}
         onResize={resizePiP}
       />,
@@ -314,8 +347,8 @@ export function PomodoroTimer() {
         <div className="flex items-center gap-3">
           <button
             onClick={async () => {
+              handleToggle();
               await requestNotificationPermission();
-              setIsRunning((r) => !r);
             }}
             className={`flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-md transition-colors ${cfg.btn} text-white`}
           >
