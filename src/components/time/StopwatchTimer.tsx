@@ -14,8 +14,14 @@ function formatTime(ms: number) {
   };
 }
 
+const PIP_SIZES = [
+  { label: "S", width: 260, height: 180 },
+  { label: "M", width: 340, height: 220 },
+  { label: "L", width: 460, height: 300 },
+];
+
 function PiPContent({
-  elapsed, isRunning, laps, onToggle, onLap, onReset,
+  elapsed, isRunning, laps, onToggle, onLap, onReset, onResize,
 }: {
   elapsed: number;
   isRunning: boolean;
@@ -23,6 +29,7 @@ function PiPContent({
   onToggle: () => void;
   onLap: () => void;
   onReset: () => void;
+  onResize: (width: number, height: number) => void;
 }) {
   const { main, sub } = formatTime(elapsed);
   const lastLapElapsed = laps.length > 0 ? elapsed - laps[0] : elapsed;
@@ -63,6 +70,17 @@ function PiPContent({
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
       </div>
+      <div className="flex items-center gap-1">
+        {PIP_SIZES.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => onResize(s.width, s.height)}
+            className="px-2 py-0.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -75,7 +93,7 @@ export function StopwatchTimer() {
   const baseElapsedRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
 
-  const { isPiP, openPiP, updatePiP, closePiP } = usePiP();
+  const { isPiP, openPiP, updatePiP, resizePiP, closePiP } = usePiP();
 
   useEffect(() => {
     if (!isRunning) {
@@ -122,11 +140,14 @@ export function StopwatchTimer() {
         onToggle={toggle}
         onLap={lap}
         onReset={reset}
+        onResize={resizePiP}
       />
     );
   }, [isPiP, elapsed, isRunning, laps, updatePiP, lap, reset]);
 
   const handleOpenPiP = () => {
+    const w = Math.min(Math.round(window.innerWidth * 0.3), 500);
+    const h = Math.min(Math.round(window.innerHeight * 0.35), 350);
     openPiP(
       <PiPContent
         elapsed={elapsed}
@@ -135,8 +156,9 @@ export function StopwatchTimer() {
         onToggle={toggle}
         onLap={lap}
         onReset={reset}
+        onResize={resizePiP}
       />,
-      { width: 340, height: 220 }
+      { width: w, height: h }
     );
   };
 

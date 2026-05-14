@@ -83,9 +83,13 @@ export function usePiP() {
     rootRef.current?.render(content);
   }, []);
 
+  const resizePiP = useCallback((width: number, height: number) => {
+    pipWinRef.current?.resizeTo(width, height);
+  }, []);
+
   const closePiP = useCallback(() => {
     pipWinRef.current?.close();
   }, []);
 
-  return { isPiP, openPiP, updatePiP, closePiP };
+  return { isPiP, openPiP, updatePiP, resizePiP, closePiP };
 }

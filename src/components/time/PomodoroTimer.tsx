@@ -9,8 +9,14 @@ type Mode = "work" | "break";
 const DEFAULT_WORK_MINUTES = 25;
 const DEFAULT_BREAK_MINUTES = 5;
 
+const PIP_SIZES = [
+  { label: "S", width: 260, height: 200 },
+  { label: "M", width: 340, height: 260 },
+  { label: "L", width: 460, height: 340 },
+];
+
 function PiPContent({
-  minutes, seconds, mode, isRunning, sessions, onToggle, onReset,
+  minutes, seconds, mode, isRunning, sessions, onToggle, onReset, onResize,
 }: {
   minutes: number;
   seconds: number;
@@ -19,6 +25,7 @@ function PiPContent({
   sessions: number;
   onToggle: () => void;
   onReset: () => void;
+  onResize: (width: number, height: number) => void;
 }) {
   const accent = mode === "work" ? "text-orange-500" : "text-green-500";
   const btnBg = mode === "work"
@@ -51,6 +58,17 @@ function PiPContent({
       <span className="text-xs text-gray-400 dark:text-gray-500">
         <span className="font-bold text-foreground">{sessions}</span> 回完了
       </span>
+      <div className="flex items-center gap-1">
+        {PIP_SIZES.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => onResize(s.width, s.height)}
+            className="px-2 py-0.5 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -66,7 +84,7 @@ export function PomodoroTimer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerFinishedRef = useRef(false);
 
-  const { isPiP, openPiP, updatePiP, closePiP } = usePiP();
+  const { isPiP, openPiP, updatePiP, resizePiP, closePiP } = usePiP();
 
   const totalSeconds = mode === "work" ? workMinutes * 60 : breakMinutes * 60;
   const progress = (secondsLeft / totalSeconds) * 100;
@@ -154,11 +172,14 @@ export function PomodoroTimer() {
         sessions={sessions}
         onToggle={() => setIsRunning((r) => !r)}
         onReset={reset}
+        onResize={resizePiP}
       />
     );
   }, [isPiP, minutes, seconds, mode, isRunning, sessions, updatePiP, reset]);
 
   const handleOpenPiP = async () => {
+    const w = Math.min(Math.round(window.innerWidth * 0.3), 500);
+    const h = Math.min(Math.round(window.innerHeight * 0.4), 400);
     await openPiP(
       <PiPContent
         minutes={minutes}
@@ -168,8 +189,9 @@ export function PomodoroTimer() {
         sessions={sessions}
         onToggle={() => setIsRunning((r) => !r)}
         onReset={reset}
+        onResize={resizePiP}
       />,
-      { width: 340, height: 280 }
+      { width: w, height: h }
     );
   };
 
