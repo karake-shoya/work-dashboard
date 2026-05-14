@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 著作権のある音声ファイル（ローカルのみ）
+public/timer-complete.m4a
