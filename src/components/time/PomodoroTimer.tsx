@@ -1,21 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Timer, Play, Pause, RotateCcw, Coffee } from "lucide-react";
+import { Timer, Play, Pause, RotateCcw, Coffee, Settings } from "lucide-react";
 
 type Mode = "work" | "break";
 
-const WORK_MINUTES = 25;
-const BREAK_MINUTES = 5;
+const DEFAULT_WORK_MINUTES = 25;
+const DEFAULT_BREAK_MINUTES = 5;
 
 export function PomodoroTimer() {
   const [mode, setMode] = useState<Mode>("work");
-  const [secondsLeft, setSecondsLeft] = useState(WORK_MINUTES * 60);
+  const [workMinutes, setWorkMinutes] = useState(DEFAULT_WORK_MINUTES);
+  const [breakMinutes, setBreakMinutes] = useState(DEFAULT_BREAK_MINUTES);
+  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_WORK_MINUTES * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [sessions, setSessions] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const totalSeconds = mode === "work" ? WORK_MINUTES * 60 : BREAK_MINUTES * 60;
+  const totalSeconds = mode === "work" ? workMinutes * 60 : breakMinutes * 60;
   const progress = (secondsLeft / totalSeconds) * 100;
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
@@ -26,11 +29,14 @@ export function PomodoroTimer() {
     }
   }, []);
 
-  const switchMode = useCallback((next: Mode) => {
-    setMode(next);
-    setSecondsLeft(next === "work" ? WORK_MINUTES * 60 : BREAK_MINUTES * 60);
-    setIsRunning(false);
-  }, []);
+  const switchMode = useCallback(
+    (next: Mode) => {
+      setMode(next);
+      setSecondsLeft(next === "work" ? workMinutes * 60 : breakMinutes * 60);
+      setIsRunning(false);
+    },
+    [workMinutes, breakMinutes]
+  );
 
   useEffect(() => {
     if (!isRunning) {
@@ -43,7 +49,7 @@ export function PomodoroTimer() {
         if (prev <= 1) {
           if (mode === "work") {
             setSessions((s) => s + 1);
-            notify("お疲れ様です！", "25分経過しました。休憩しましょう。");
+            notify("お疲れ様です！", `${workMinutes}分経過しました。休憩しましょう。`);
             switchMode("break");
           } else {
             notify("休憩終了", "作業を再開しましょう。");
@@ -58,11 +64,27 @@ export function PomodoroTimer() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, mode, notify, switchMode]);
+  }, [isRunning, mode, notify, switchMode, workMinutes]);
 
   const reset = () => {
     setIsRunning(false);
-    setSecondsLeft(mode === "work" ? WORK_MINUTES * 60 : BREAK_MINUTES * 60);
+    setSecondsLeft(mode === "work" ? workMinutes * 60 : breakMinutes * 60);
+  };
+
+  const handleWorkMinutesChange = (value: number) => {
+    const clamped = Math.min(99, Math.max(1, value));
+    setWorkMinutes(clamped);
+    if (mode === "work" && !isRunning) {
+      setSecondsLeft(clamped * 60);
+    }
+  };
+
+  const handleBreakMinutesChange = (value: number) => {
+    const clamped = Math.min(99, Math.max(1, value));
+    setBreakMinutes(clamped);
+    if (mode === "break" && !isRunning) {
+      setSecondsLeft(clamped * 60);
+    }
   };
 
   const circumference = 2 * Math.PI * 70;
@@ -98,8 +120,54 @@ export function PomodoroTimer() {
             <Coffee className="w-3 h-3 inline mr-1" />
             休憩
           </button>
+          <button
+            onClick={() => setShowSettings((s) => !s)}
+            className={`p-1.5 rounded-md transition-colors ${
+              showSettings
+                ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+            }`}
+            title="時間設定"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
+
+      {/* 設定パネル */}
+      {showSettings && (
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-lg flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">作業</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={workMinutes}
+              disabled={isRunning}
+              onChange={(e) => handleWorkMinutesChange(Number(e.target.value))}
+              className="w-14 px-2 py-1 text-xs text-center border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span className="text-xs text-gray-400">分</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">休憩</span>
+            <input
+              type="number"
+              min={1}
+              max={99}
+              value={breakMinutes}
+              disabled={isRunning}
+              onChange={(e) => handleBreakMinutesChange(Number(e.target.value))}
+              className="w-14 px-2 py-1 text-xs text-center border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-900 text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <span className="text-xs text-gray-400">分</span>
+          </div>
+          {isRunning && (
+            <span className="text-xs text-gray-400 ml-auto">タイマー停止中のみ変更可</span>
+          )}
+        </div>
+      )}
 
       {/* 円形プログレス（拡大・中央） */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
