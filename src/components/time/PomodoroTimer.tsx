@@ -169,7 +169,7 @@ export function PomodoroTimer() {
         onToggle={() => setIsRunning((r) => !r)}
         onReset={reset}
       />,
-      { width: 260, height: 220 }
+      { width: 340, height: 280 }
     );
   };
 

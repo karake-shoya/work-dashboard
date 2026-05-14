@@ -136,7 +136,7 @@ export function StopwatchTimer() {
         onLap={lap}
         onReset={reset}
       />,
-      { width: 260, height: 180 }
+      { width: 340, height: 220 }
     );
   };
 
