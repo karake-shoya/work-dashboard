@@ -29,6 +29,12 @@ export function PomodoroTimer() {
     }
   }, []);
 
+  const requestNotificationPermission = useCallback(async () => {
+    if (Notification.permission === "default") {
+      await Notification.requestPermission();
+    }
+  }, []);
+
   const switchMode = useCallback(
     (next: Mode) => {
       setMode(next);
@@ -205,7 +211,10 @@ export function PomodoroTimer() {
         {/* コントロール */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setIsRunning((r) => !r)}
+            onClick={async () => {
+              await requestNotificationPermission();
+              setIsRunning((r) => !r);
+            }}
             className={`flex items-center gap-1.5 px-5 py-2 text-sm font-medium rounded-lg transition-colors ${
               mode === "work"
                 ? "bg-orange-500 hover:bg-orange-600 text-white"
