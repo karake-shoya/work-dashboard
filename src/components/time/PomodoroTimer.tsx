@@ -1,12 +1,59 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Timer, Play, Pause, RotateCcw, Coffee, Settings } from "lucide-react";
+import { Timer, Play, Pause, RotateCcw, Coffee, Settings, PictureInPicture2 } from "lucide-react";
+import { usePiP } from "@/hooks/usePiP";
 
 type Mode = "work" | "break";
 
 const DEFAULT_WORK_MINUTES = 25;
 const DEFAULT_BREAK_MINUTES = 5;
+
+function PiPContent({
+  minutes, seconds, mode, isRunning, sessions, onToggle, onReset,
+}: {
+  minutes: number;
+  seconds: number;
+  mode: Mode;
+  isRunning: boolean;
+  sessions: number;
+  onToggle: () => void;
+  onReset: () => void;
+}) {
+  const accent = mode === "work" ? "text-orange-500" : "text-green-500";
+  const btnBg = mode === "work"
+    ? "bg-orange-500 hover:bg-orange-600"
+    : "bg-green-500 hover:bg-green-600";
+  return (
+    <div className="bg-white dark:bg-gray-900 h-full flex flex-col items-center justify-center gap-3 p-4">
+      <span className={`text-xs font-medium ${accent}`}>
+        {mode === "work" ? "作業中" : "休憩中"}
+      </span>
+      <span className="text-5xl font-bold font-mono text-foreground tracking-wider">
+        {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
+      </span>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onToggle}
+          className={`flex items-center gap-1 px-4 py-1.5 text-sm font-medium rounded-lg text-white transition-colors ${btnBg}`}
+        >
+          {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+          {isRunning ? "一時停止" : "開始"}
+        </button>
+        <button
+          onClick={onReset}
+          className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          title="リセット"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <span className="text-xs text-gray-400 dark:text-gray-500">
+        <span className="font-bold text-foreground">{sessions}</span> 回完了
+      </span>
+    </div>
+  );
+}
 
 export function PomodoroTimer() {
   const [mode, setMode] = useState<Mode>("work");
@@ -18,6 +65,8 @@ export function PomodoroTimer() {
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerFinishedRef = useRef(false);
+
+  const { isPiP, openPiP, updatePiP, closePiP } = usePiP();
 
   const totalSeconds = mode === "work" ? workMinutes * 60 : breakMinutes * 60;
   const progress = (secondsLeft / totalSeconds) * 100;
@@ -88,9 +137,40 @@ export function PomodoroTimer() {
     }
   }, [secondsLeft, mode, notify, switchMode, workMinutes]);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setIsRunning(false);
     setSecondsLeft(mode === "work" ? workMinutes * 60 : breakMinutes * 60);
+  }, [mode, workMinutes, breakMinutes]);
+
+  // PiPウィンドウのコンテンツを毎フレーム更新
+  useEffect(() => {
+    if (!isPiP) return;
+    updatePiP(
+      <PiPContent
+        minutes={minutes}
+        seconds={seconds}
+        mode={mode}
+        isRunning={isRunning}
+        sessions={sessions}
+        onToggle={() => setIsRunning((r) => !r)}
+        onReset={reset}
+      />
+    );
+  }, [isPiP, minutes, seconds, mode, isRunning, sessions, updatePiP, reset]);
+
+  const handleOpenPiP = async () => {
+    await openPiP(
+      <PiPContent
+        minutes={minutes}
+        seconds={seconds}
+        mode={mode}
+        isRunning={isRunning}
+        sessions={sessions}
+        onToggle={() => setIsRunning((r) => !r)}
+        onReset={reset}
+      />,
+      { width: 260, height: 220 }
+    );
   };
 
   const handleWorkMinutesChange = (value: number) => {
@@ -153,6 +233,17 @@ export function PomodoroTimer() {
           >
             <Settings className="w-3.5 h-3.5" />
           </button>
+          <button
+            onClick={isPiP ? closePiP : handleOpenPiP}
+            className={`p-1.5 rounded-md transition-colors ${
+              isPiP
+                ? "bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
+                : "text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300"
+            }`}
+            title={isPiP ? "PiPを閉じる" : "ピクチャーインピクチャーで開く"}
+          >
+            <PictureInPicture2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
@@ -191,7 +282,7 @@ export function PomodoroTimer() {
         </div>
       )}
 
-      {/* 円形プログレス（拡大・中央） */}
+      {/* 円形プログレス */}
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <div className="relative w-44 h-44">
           <svg className="w-44 h-44 -rotate-90" viewBox="0 0 160 160">
