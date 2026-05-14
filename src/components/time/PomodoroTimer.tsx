@@ -17,6 +17,7 @@ export function PomodoroTimer() {
   const [sessions, setSessions] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerFinishedRef = useRef(false);
 
   const totalSeconds = mode === "work" ? workMinutes * 60 : breakMinutes * 60;
   const progress = (secondsLeft / totalSeconds) * 100;
@@ -44,6 +45,7 @@ export function PomodoroTimer() {
     [workMinutes, breakMinutes]
   );
 
+  // カウントダウン
   useEffect(() => {
     if (!isRunning) {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -53,14 +55,7 @@ export function PomodoroTimer() {
     intervalRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
-          if (mode === "work") {
-            setSessions((s) => s + 1);
-            notify("お疲れ様です！", `${workMinutes}分経過しました。休憩しましょう。`);
-            switchMode("break");
-          } else {
-            notify("休憩終了", "作業を再開しましょう。");
-            switchMode("work");
-          }
+          timerFinishedRef.current = true;
           return 0;
         }
         return prev - 1;
@@ -70,7 +65,22 @@ export function PomodoroTimer() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, mode, notify, switchMode, workMinutes]);
+  }, [isRunning]);
+
+  // タイマー終了時に通知とモード切替を実行
+  useEffect(() => {
+    if (!timerFinishedRef.current) return;
+    timerFinishedRef.current = false;
+
+    if (mode === "work") {
+      setSessions((s) => s + 1);
+      notify("お疲れ様です！", `${workMinutes}分経過しました。休憩しましょう。`);
+      switchMode("break");
+    } else {
+      notify("休憩終了", "作業を再開しましょう。");
+      switchMode("work");
+    }
+  }, [secondsLeft, mode, notify, switchMode, workMinutes]);
 
   const reset = () => {
     setIsRunning(false);
