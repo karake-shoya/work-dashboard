@@ -24,11 +24,17 @@ export function PomodoroTimer() {
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
 
+  const playSound = useCallback(() => {
+    const audio = new Audio("/timer-complete.m4a");
+    audio.play().catch(() => {});
+  }, []);
+
   const notify = useCallback((title: string, body: string) => {
+    playSound();
     if (Notification.permission === "granted") {
       new Notification(title, { body });
     }
-  }, []);
+  }, [playSound]);
 
   const requestNotificationPermission = useCallback(async () => {
     if (Notification.permission === "default") {
